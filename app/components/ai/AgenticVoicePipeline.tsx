@@ -3,6 +3,7 @@ import { useEffect, useRef, useCallback, useMemo, useState } from 'react'
 import { MicVAD } from "@ricky0123/vad-web"
 import { TutorMetrics, LevelContent } from "@/app/types/tutor";
 import { useTutor } from "@/app/hooks/useTutor";
+import { API_BASE } from '@/lib/api';
 
 // Dentro de AgenticVoicePipeline.tsx
 import { useAuthToken } from "@/app/hooks/useAuthToken"; // Tu nuevo hook
@@ -176,16 +177,8 @@ const AgenticVoicePipeline = ({
                 return;
             }
 
-            /*const response = await fetch('http://localhost:8080/api/tutor/get-dynamic-question', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token && { 'Authorization': `Bearer ${token}` })
-                },
-                body: JSON.stringify(payload)
-            });*/
 
-            const response = await fetch('http://localhost:8080/api/tutor/get-dynamic-question', {
+            const response = await fetch(`${API_BASE}/api/tutor/get-dynamic-question`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

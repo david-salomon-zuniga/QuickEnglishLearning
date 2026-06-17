@@ -21,3 +21,4 @@ export const SafeHtml: React.FC<SafeHtmlProps> = ({ content }) => {
         />
     );
 };
+

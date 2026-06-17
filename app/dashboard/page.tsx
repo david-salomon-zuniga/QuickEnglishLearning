@@ -7,11 +7,12 @@ import SignOutButton from "../components/SignOutButton"
 import ProButton from "../components/ProButton";
 import LemonSqueezyScript from "../components/LemonSqueezyScript";
 import { supabase } from "@/app/utils/supabase";
+import { API_BASE } from '@/lib/api';
 
 // 1. Modifica la función para que use el accessToken en la cabecera
 async function getProgress(userId: string) {
     try {
-        const res = await fetch(`http://localhost:8080/api/get-progress?userId=${userId}`, {
+        const res = await fetch(`${API_BASE}/api/get-progress?userId=${userId}`, {
             cache: 'no-store',
             next: { revalidate: 0 }, // Forzamos revalidación total
             headers: {

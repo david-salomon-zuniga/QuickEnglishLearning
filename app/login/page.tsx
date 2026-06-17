@@ -50,69 +50,6 @@ export default function LoginPage() {
     };
 
 
-    /*const handleEmailLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            // 1. Direct Backend Check
-            const userCheckRes = await fetch(`http://localhost:8080/api/user/check-exists?email=${email}`);
-            if (!userCheckRes.ok) throw new Error("Backend validation failed");
-
-            const userData = await userCheckRes.json();
-            if (userData.exists === false) {
-                alert("you are not registered yet!, please fill our registration form first, thanks!");
-                router.push("/register");
-                return;
-            }
-
-            // 2. NextAuth Sign-In
-            const result = await signIn("credentials", {
-                email,
-                password,
-                redirect: false,
-            });
-
-            if (result?.error) {
-                alert("Invalid email or password");
-                return;
-            }
-
-            // 3. OBTENER TOKEN DIRECTO DE TU API GO
-            const loginRes = await fetch("http://localhost:8080/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!loginRes.ok) {
-                throw new Error("Failed to get token from backend");
-            }
-
-            const loginData = await loginRes.json();
-
-            // 🔥 GUARDADO AUTOMÁTICO PARA TU SCRIPT DE POWERSHELL
-            const tokenFinal = loginData.access_token;
-
-            if (tokenFinal) {
-                console.log("🔥 TOKEN REAL DE GO:", tokenFinal);
-                // Guardamos en localStorage para persistencia inmediata
-                localStorage.setItem("sb-token-local", tokenFinal);
-                console.log("✅ Token guardado en localStorage como 'sb-token-local'");
-            } else {
-                console.error("❌ No se recibió token en la respuesta de Go. Respuesta recibida:", loginData);
-            }
-
-            router.push("/dashboard");
-
-        } catch (error: any) {
-            console.error("Auth Error:", error);
-            alert("Invalid email or password");
-        } finally {
-            setLoading(false);
-        }
-    };*/
-
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 md:p-6 relative">
             <Link

@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Asegúrate de importar esto en tu componente
 import { useSession } from "next-auth/react";
+import { API_BASE } from '@/lib/api';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -50,7 +51,7 @@ export const useTutor = (numericLevelId: number, /*onUpdateMetrics: (m: TutorMet
                 // Usamos el token que viene de la sesión de NextAuth (ya sincronizado)
                 const token = session?.accessToken;
 
-                const response = await fetch('http://localhost:8080/api/call-tutor-pipeline', {
+                const response = await fetch(`${API_BASE}/api/call-tutor-pipeline`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -119,7 +120,7 @@ export const useTutor = (numericLevelId: number, /*onUpdateMetrics: (m: TutorMet
             const token = session?.accessToken;
 
             const blob = new Blob([new Float32Array(audioBuffer)], { type: 'application/octet-stream' });
-            const response = await fetch('http://localhost:8080/api/tutor/verify', {
+            const response = await fetch(`${API_BASE}/api/tutor/verify`, {
                 method: 'POST',
                 body: blob,
                 headers: {

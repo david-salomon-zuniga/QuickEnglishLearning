@@ -7,6 +7,7 @@ import { supabase } from "@/app/utils/supabase";
 import { shuffleArray } from "@/app/lib/utils";
 import { useLevelNavigation } from "@/app/hooks/useLevelNavigation";
 import { updateProgress } from "@/app/lib/progress";
+import { API_BASE } from '@/lib/api';
 
 import {
     PracticeType,
@@ -66,7 +67,7 @@ export default function LevelPage() {
 
 
                 // 2. Solicitamos los datos a Go con el protocolo Authorization Bearer
-                const res = await fetch(`http://localhost:8080/api/level-content?levelId=${numericLevelId}`, {
+                const res = await fetch(`${API_BASE}/api/level-content?levelId=${numericLevelId}`, {
                     cache: 'no-store',
                     headers: {
                         "Content-Type": "application/json",

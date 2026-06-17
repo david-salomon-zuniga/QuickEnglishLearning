@@ -1,12 +1,13 @@
 "use client"
 import { useEffect, useState } from 'react'
 import Link from 'next/link';
+import { API_BASE } from '@/lib/api';
 
 export default function LandingClient() {
     const [word, setWord] = useState({ en: "", es: "" })
 
     useEffect(() => {
-        fetch('http://localhost:8080/api/word')
+        fetch(`${API_BASE}/api/word`)
             .then(res => res.json())
             .then(data => setWord(data))
     }, [])

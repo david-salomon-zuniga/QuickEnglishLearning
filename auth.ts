@@ -4,6 +4,7 @@ import Credentials from "next-auth/providers/credentials" // Import this
 import { CredentialsSignin } from "next-auth"
 import bcrypt from "bcryptjs" // <-- Add this import at the top
 import { supabase } from "@/app/utils/supabase";
+import { API_BASE } from '@/lib/api';
 
 class UserExistsError extends CredentialsSignin {
     code = "EmailAlreadyInUse"
@@ -64,7 +65,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     // 🔥 EXTRAE EL TOKEN DIRECTAMENTE DE AQUÍ
                     const token = authData.session?.access_token;
 
-                    const res = await fetch("http://localhost:8080/api/upsert-user", {
+                    const res = await fetch(`${API_BASE}/api/upsert-user`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -90,7 +91,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // 🔥 AQUÍ TIENES EL TOKEN REAL
                 const token = loginData.session.access_token;
 
-                const userRes = await fetch("http://localhost:8080/api/auth/login", {
+                const userRes = await fetch(`${API_BASE}/api/auth/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email: credentials.email, password: credentials.password }),
@@ -151,7 +152,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (account?.provider === "google") {
                 try {
                     // 1. Intentar buscar o crear el usuario en tu API de Go
-                    const res = await fetch(`http://localhost:8080/api/upsert-user`, {
+                    const res = await fetch(`${API_BASE}/api/upsert-user`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -253,7 +254,7 @@ async function refreshAccessToken(token: any) {
         const sbToken = sbSession?.access_token;
 
         // Protocol: Sync new token to Supabase via your Go API
-        await fetch(`http://localhost:8080/api/update-token`, {
+        await fetch(`${API_BASE}/api/update-token`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

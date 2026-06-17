@@ -2,6 +2,7 @@ import { supabase } from "@/app/utils/supabase";
 
 
 import { getSession } from "next-auth/react";
+import { API_BASE } from '@/lib/api';
 
 export const updateProgress = async (userId: string, newLevel: number, newStep: number, newSubStep: number, passedToken?: string) => {
     try {
@@ -36,7 +37,7 @@ export const updateProgress = async (userId: string, newLevel: number, newStep: 
 
         console.log("✈️ [FRONTEND LOG] Enviando este Payload a Go:", JSON.stringify(payload));
 
-        const response = await fetch('http://localhost:8080/api/progress', {
+        const response = await fetch(`${API_BASE}/api/progress`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -70,7 +71,7 @@ export const saveEvaluation = async (userId: string, data: any, passedToken?: st
 
         const payload = { ...data, user_id: userId };
 
-        const response = await fetch("http://localhost:8080/api/save-evaluation", {
+        const response = await fetch(`${API_BASE}/api/save-evaluation`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

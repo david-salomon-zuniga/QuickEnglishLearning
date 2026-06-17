@@ -1,6 +1,7 @@
 "use client"
 import { useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
+import { API_BASE } from '@/lib/api';
 
 // Move your logic into a sub-component
 function ResetPasswordContent() {
@@ -16,7 +17,7 @@ function ResetPasswordContent() {
 
         setLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reset-password`, {
+            const res = await fetch(`${API_BASE}/api/reset-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token, newPassword }),

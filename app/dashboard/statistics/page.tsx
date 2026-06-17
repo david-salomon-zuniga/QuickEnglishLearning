@@ -6,6 +6,7 @@ import AvgScore from "../../components/charts/AvgScore";
 import { LevelStat } from "@/app/types/statistics";
 import ProgressMastery from "@/app/components/charts/ProgressMastery";
 import MistakeTracker from "../../components/charts/MistakeTracker";
+import { API_BASE } from '@/lib/api';
 
 interface StatsData {
     globalAverage: number;
@@ -34,7 +35,7 @@ export default function StatisticsPage() {
             };
 
             // Fetch Evaluation Stats
-            fetch(`http://localhost:8080/api/get-evaluation-stats?userId=${userId}`, { headers })
+            fetch(`${API_BASE}/api/get-evaluation-stats?userId=${userId}`, { headers })
                 .then(async res => {
                     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                     return res.json();
@@ -43,7 +44,7 @@ export default function StatisticsPage() {
                 .catch(err => console.error("Error fetching stats:", err));
 
             // Fetch Level History
-            fetch(`http://localhost:8080/api/get-level-history?userId=${userId}`, { headers })
+            fetch(`${API_BASE}/api/get-level-history?userId=${userId}`, { headers })
                 .then(async res => {
                     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                     return res.json();

@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
 import { supabase } from "@/app/utils/supabase"
+import { API_BASE } from '@/lib/api';
 
 export async function POST() {
     const session = await auth()
@@ -14,7 +15,7 @@ export async function POST() {
     const token = sbSession?.access_token;
 
     // Now TypeScript knows session.user.id is a string
-    const response = await fetch("http://localhost:8080/api/create-checkout-session", {
+    const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
