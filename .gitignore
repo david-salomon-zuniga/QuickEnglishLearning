@@ -20,3 +20,6 @@ build/
 # Ignore folders in frontend
 frontend/app/data/
 frontend/scripts/
+
+app/data/
+scripts/
