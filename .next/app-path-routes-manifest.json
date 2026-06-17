@@ -1,0 +1,17 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",
+  "/api/checkout/route": "/api/checkout",
+  "/dashboard/level/[levelId]/page": "/dashboard/level/[levelId]",
+  "/dashboard/level/pro/[levelId]/page": "/dashboard/level/pro/[levelId]",
+  "/dashboard/page": "/dashboard",
+  "/dashboard/practice/page": "/dashboard/practice",
+  "/dashboard/statistics/page": "/dashboard/statistics",
+  "/favicon.ico/route": "/favicon.ico",
+  "/forgot-password/page": "/forgot-password",
+  "/login/page": "/login",
+  "/page": "/",
+  "/register/page": "/register",
+  "/reset-password/page": "/reset-password"
+}
