@@ -6,8 +6,9 @@ export default function SignOutButton() {
         // 1. Wipe the language choice from the browser
         localStorage.removeItem("userLanguage");
 
-        // 2. Sign out and go to the home page
-        signOut({ callbackUrl: "/" });
+        // 2. Sign out and redirect
+        // Use the window.location.origin to ensure it stays on your current domain
+        signOut({ callbackUrl: `${window.location.origin}/` });
     };
 
     return (
