@@ -10,13 +10,15 @@ import { supabase } from "@/app/utils/supabase";
 import { API_BASE } from '@/lib/api';
 
 // 1. Modifica la función para que use el accessToken en la cabecera
-async function getProgress(userId: string) {
+async function getProgress(userId: string, accessToken: string) {
     try {
         const res = await fetch(`${API_BASE}/api/get-progress?userId=${userId}`, {
             cache: 'no-store',
-            next: { revalidate: 0 }, // Forzamos revalidación total
             headers: {
                 "Content-Type": "application/json",
+                // Usamos el token real del usuario para que tu API de Go lo valide
+                "Authorization": `Bearer ${accessToken}`,
+                // Opcional: mantén la key solo si la sigues necesitando en el backend
                 "X-Internal-Server-Key": process.env.INTERNAL_SERVER_KEY || ""
             }
         });
@@ -42,7 +44,17 @@ export default async function DashboardPage() {
     const LEMON_SQUEEZY_ENDPOINT = "https://salomonapps.lemonsqueezy.com/checkout/buy/7201c356-e4cf-46e8-9226-72db59fd19b5";
     const checkoutUrlWithId = `${LEMON_SQUEEZY_ENDPOINT}?checkout[custom][user_id]=${session?.user?.id}&embed=1`;
 
-    let data = await getProgress(session.user.id);
+    // Asegúrate de extraer el token. 
+    // NOTA: Dependiendo de tu configuración de auth, el token podría estar en session.accessToken
+    const token = (session as any).accessToken;
+    console.log("DEBUG: Token enviado al backend:", token ? `${token.substring(0, 10)}...` : "TOKEN MISSING");
+
+    if (!token) {
+        console.error("ERROR: No se encontró accessToken en la sesión");
+    }
+
+    // Llamada con el token
+    let data = await getProgress(session.user.id, token);
     // Force level to be at least 1 so the URL is never /pro/0
     let currentLevel = Math.max(1, data.level || 1);
     let currentStep = data.step || 0;
