@@ -32,5 +32,8 @@ export default auth((req) => {
 
 export const config = {
     // 🔥 EXCLUSIÓN CORRECTA: Dejamos fuera TODA la carpeta api para evitar el 404 de Auth.js
-    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+    // Exclude static assets, but allow /api/delete-user to pass through
+    //matcher: ["/((?!_next/static|_next/image|favicon.ico|api/).*)"],
+    // Only run middleware on dashboard or auth-sensitive pages
+    matcher: ["/dashboard/:path*", "/login", "/register"],
 }

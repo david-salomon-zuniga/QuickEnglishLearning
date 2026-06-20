@@ -8,6 +8,7 @@ import ProButton from "../components/ProButton";
 import LemonSqueezyScript from "../components/LemonSqueezyScript";
 import { supabase } from "@/app/utils/supabase";
 import { API_BASE } from '@/lib/api';
+import ProfileButton from "../components/ProfileButton";
 
 // 1. Modifica la función para que use el accessToken en la cabecera
 async function getProgress(userId: string, accessToken: string) {
@@ -88,6 +89,7 @@ export default async function DashboardPage() {
                             userId={session.user.id} // <-- Cambia user.id por session.user.id
                         />
                         <SignOutButton />
+                        <ProfileButton /> {/* Added here */}
                     </div>
                 </header>
 
