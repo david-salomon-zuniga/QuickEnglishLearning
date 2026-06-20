@@ -1,5 +1,5 @@
 // lib/api.ts
-export const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:7860";
+export const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 // Hardcode it temporarily to verify the connection
 //export const API_BASE = "http://localhost:7860";
 
