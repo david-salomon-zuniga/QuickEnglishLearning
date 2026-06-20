@@ -23,13 +23,21 @@ export default function ProfilePage() {
                 headers: { "Content-Type": "application/json" }
             });
 
+            // LOG THE RESPONSE STATUS
+            console.log("DEBUG: Response status:", res.status);
+
             if (res.ok) {
                 router.push("/");
                 router.refresh();
             } else {
+                // GET THE ACTUAL ERROR FROM THE BACKEND
+                const errorData = await res.text();
+                console.error("DEBUG: Backend returned error:", errorData);
+                alert("Error: " + errorData);
                 alert("Error deleting account. Please contact support.");
             }
         } catch (err) {
+            console.error("DEBUG: Frontend fetch error:", err);
             console.error(err);
             alert("An unexpected error occurred.");
         } finally {
