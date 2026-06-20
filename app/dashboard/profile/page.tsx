@@ -18,7 +18,10 @@ export default function ProfilePage() {
         setLoading(true);
         try {
             // This calls the API route we created in step 1
-            const res = await fetch("/api/delete-user", { method: "POST" });
+            const res = await fetch("/api/delete-user", {
+                method: "DELETE", // Coincide con lo que espera tu Go
+                headers: { "Content-Type": "application/json" }
+            });
 
             if (res.ok) {
                 router.push("/");
