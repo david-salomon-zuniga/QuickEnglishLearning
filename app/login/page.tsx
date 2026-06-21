@@ -17,15 +17,21 @@ export default function LoginPage() {
     const router = useRouter();
 
     const handleGoogleLogin = async () => {
-        // 1. Esto abre la ventana de Google y crea el usuario en 'auth.users' automáticamente
+        // Forzamos la URL exacta que configuramos en el panel
+        const redirectUrl = "https://quick-english-learning.vercel.app/auth/callback";
+
+        console.log("Intentando login con redirect:", redirectUrl); // Mira esto en la consola del navegador
+
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${window.location.origin}/auth/callback` // Debes tener esta ruta
+                redirectTo: redirectUrl
             }
         });
 
-        if (error) console.error("Error iniciando con Google:", error);
+        if (error) {
+            console.error("Error detallado de Supabase:", error);
+        }
     };
 
     // LoginPage.tsx - MODO LIMPIO
