@@ -16,7 +16,7 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleGoogleLogin = async () => {
+    /*const handleGoogleLogin = async () => {
         // Forzamos la URL exacta que configuramos en el panel
         const redirectUrl = "https://quick-english-learning.vercel.app/auth/callback";
 
@@ -32,6 +32,21 @@ export default function LoginPage() {
         if (error) {
             console.error("Error detallado de Supabase:", error);
         }
+    };*/
+    const handleGoogleLogin = async () => {
+        // Forzamos el flujo de Supabase sin pasar un redirectTo dinámico inicialmente
+        // para ver si el error es la URL o el provider.
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent',
+                },
+            },
+        });
+
+        if (error) console.error("Error crítico de Supabase:", error);
     };
 
     // LoginPage.tsx - MODO LIMPIO
