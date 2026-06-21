@@ -4,7 +4,7 @@ import Credentials from "next-auth/providers/credentials" // Import this
 import { CredentialsSignin } from "next-auth"
 import bcrypt from "bcryptjs" // <-- Add this import at the top
 import { supabase } from "@/app/utils/supabase";
-import { API_BASE } from '@/lib/api';
+import { API_BASE } from '@/lib/api';// ADD THIS IMPORT
 
 class UserExistsError extends CredentialsSignin {
     code = "EmailAlreadyInUse"
