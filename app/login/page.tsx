@@ -17,7 +17,15 @@ export default function LoginPage() {
     const router = useRouter();
 
     const handleGoogleLogin = async () => {
-        await signIn("google", { redirect: true, callbackUrl: "/dashboard" });
+        // 1. Esto abre la ventana de Google y crea el usuario en 'auth.users' automáticamente
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback` // Debes tener esta ruta
+            }
+        });
+
+        if (error) console.error("Error iniciando con Google:", error);
     };
 
     // LoginPage.tsx - MODO LIMPIO
