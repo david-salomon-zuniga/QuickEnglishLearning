@@ -30,4 +30,9 @@ export async function middleware(request: NextRequest) {
     return response
 }
 
-export const config = { matcher: ['/dashboard/:path*'] }
+export const config = {
+    matcher: [
+        '/dashboard/:path*',
+        '/auth/callback' // Añade esta línea
+    ]
+}
