@@ -5,7 +5,6 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
-    // 'next' es a donde redirigiremos tras el éxito
     const next = searchParams.get('next') ?? '/dashboard'
 
     if (code) {
@@ -20,24 +19,25 @@ export async function GET(request: Request) {
                         return cookieStore.get(name)?.value
                     },
                     set(name: string, value: string, options: CookieOptions) {
-                        cookieStore.set({ name, value, ...options })
+                        // Aseguramos que la cookie se guarde correctamente
+                        cookieStore.set(name, value, options)
                     },
                     remove(name: string, options: CookieOptions) {
-                        cookieStore.set({ name, value: '', ...options })
+                        // Limpiamos la cookie explícitamente
+                        cookieStore.delete(name)
                     },
                 },
             }
         )
 
-        // Esta es la función crítica que intercambia el código por la sesión
-        // y SETEA las cookies automáticamente mediante la configuración de arriba
         const { error } = await supabase.auth.exchangeCodeForSession(code)
 
         if (!error) {
-            return NextResponse.redirect(`${origin}${next}`)
+            // El redirect debe ser absoluto hacia la URL completa
+            return NextResponse.redirect(new URL(next, origin))
         }
     }
 
-    // Si algo falla, redirige al login
-    return NextResponse.redirect(`${origin}/login`)
+    // Fallo: redirigir a login
+    return NextResponse.redirect(new URL('/login', origin))
 }
