@@ -28,36 +28,23 @@ export default async function proxy(request: NextRequest) {
 
     const { data: { session } } = await supabase.auth.getSession()
 
-    // Lógica de protección: Si no hay sesión, al login.
-    if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
-        return NextResponse.redirect(new URL('/login', request.url))
+    // 1. SI NO HAY SESIÓN: Permite el acceso total. 
+    // No redirijas a nadie a menos que tú lo programes específicamente.
+    if (!session) {
+        return response;
     }
 
-    // 1. Check if the user is already on the target page to prevent loops
-    if (request.nextUrl.pathname === '/accept-terms') {
-        return response; // Allow them to stay on the page
+    // 2. SI HAY SESIÓN: Solo aquí protegemos las rutas
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('terms_accepted')
+        .eq('id', session.user.id)
+        .single();
+
+    // Si el perfil no tiene terms_accepted en true, Y no estás ya en la página de aceptar, redirige.
+    if (profile && !profile.terms_accepted && request.nextUrl.pathname !== '/accept-terms') {
+        return NextResponse.redirect(new URL('/accept-terms', request.url));
     }
-
-    // Add this inside your proxy function, after getting the session
-    if (session) {
-        // Add { cache: 'no-store' } logic or simply use a fresh call
-        const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('terms_accepted')
-            .eq('id', session.user.id)
-            .single();
-
-        // If there is an error, redirect to login to be safe, not the terms page
-        if (profileError || !profile) {
-            return NextResponse.redirect(new URL('/', request.url));
-        }
-
-        // Only redirect if NOT accepted and NOT on the page
-        if (!profile.terms_accepted && request.nextUrl.pathname !== '/accept-terms') {
-            return NextResponse.redirect(new URL('/accept-terms', request.url));
-        }
-    }
-
 
     return response
 }
