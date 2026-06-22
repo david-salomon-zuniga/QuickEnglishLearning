@@ -61,7 +61,9 @@ export default async function DashboardPage() {
 
     // 3. Safeguard check
     if (!termsAccepted) {
-        redirect("/register");
+        // Only redirect if they haven't accepted terms
+        // This pushes them to your new page instead of the registration page
+        redirect("/accept-terms");
     }
 
     const LEMON_SQUEEZY_ENDPOINT = "https://salomonapps.lemonsqueezy.com/checkout/buy/7201c356-e4cf-46e8-9226-72db59fd19b5";
