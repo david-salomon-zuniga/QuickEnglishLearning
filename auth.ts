@@ -30,16 +30,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
     },
     providers: [
-        Google({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            authorization: {
-                params: {
-                    access_type: "offline",
-                    prompt: "consent",
-                },
-            },
-        }),
+        /* Google({
+             clientId: process.env.GOOGLE_CLIENT_ID,
+             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+             authorization: {
+                 params: {
+                     access_type: "offline",
+                     prompt: "consent",
+                 },
+             },
+         }),*/
         Credentials({
             name: "Credentials",
             credentials: {
@@ -139,7 +139,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (account?.provider === "credentials") return true;
 
             // 2. Google: Confía en los datos que Google te envía
-            if (account?.provider === "google") {
+            /*if (account?.provider === "google") {
                 try {
                     const res = await fetch(`${API_BASE}/api/upsert-user`, {
                         method: "POST",
@@ -161,7 +161,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     console.error("❌ Error de conexión con API de Go:", error);
                     return false;
                 }
-            }
+            }*/
             return false;
         },
         async jwt({ token, user, account }) {
