@@ -181,22 +181,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.id = user.id;
                 token.refreshToken = account.refresh_token || "manual_session";
                 token.expiresAt = account.expires_at ? account.expires_at * 1000 : Date.now() + 3600 * 1000;
+
+                // Aseguramos que los términos se propaguen
                 token.termsAccepted = (user as any).termsAccepted;
-
-                // Prioridad absoluta: Si tenemos cuenta, usamos su token
                 token.accessToken = account.access_token || (user as any).token || "";
-                return token;
+            }
+            // 2. Si no hay login reciente, recuperamos del "puente" de Supabase
+            else {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.access_token) {
+                    token.accessToken = session.access_token;
+                }
             }
 
-            // 2. Validación de sesión activa con Supabase (La fuente de la verdad)
-            const { data: { session: sbSession } } = await supabase.auth.getSession();
-
-            // Si hay una sesión válida en Supabase, el token de la sesión debe ser el que usemos
-            if (sbSession?.access_token) {
-                token.accessToken = sbSession.access_token;
-            }
-
-            // 3. Rotación lógica (Solo si no tenemos token válido de Supabase)
+            // 3. Rotación lógica (Solo si no tenemos token válido)
             if (!token.accessToken && token.refreshToken && token.refreshToken !== "manual_session") {
                 return refreshAccessToken(token);
             }
