@@ -7,18 +7,23 @@ import DOMPurify from 'dompurify'; // 🛡️ Importamos DOMPurify para sanitiza
 import { createClient } from '@supabase/supabase-js';
 
 // Asegúrate de importar esto en tu componente
-import { useSession } from "next-auth/react";
+import { supabase } from "@/app/utils/supabase";
 import { API_BASE } from '@/lib/api';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const useTutor = (
+    numericLevelId: number,
+    isTutorActive: boolean,
+    setIsTutorActive: (active: boolean) => void,
+    isRecordingActive: boolean,
+    setIsRecordingActive: (active: boolean) => void,
+    lessonHistory: string[],
+    setLessonHistory: Dispatch<SetStateAction<string[]>>
+) => {
 
-export const useTutor = (numericLevelId: number, /*onUpdateMetrics: (m: TutorMetrics) => void,*/ isTutorActive: boolean, setIsTutorActive: (active: boolean) => void, isRecordingActive: boolean, setIsRecordingActive: (active: boolean) => void, lessonHistory: string[], setLessonHistory: Dispatch<SetStateAction<string[]>>) => {// <--- Add this) => {
 
-    // ... dentro de tu función:
-    const { data: session } = useSession(); // <--- NextAuth ya tiene el token refrescado
 
     // Sync the local state with the external prop
     useEffect(() => {
@@ -49,7 +54,8 @@ export const useTutor = (numericLevelId: number, /*onUpdateMetrics: (m: TutorMet
 
                 // Get active Supabase token
                 // Usamos el token que viene de la sesión de NextAuth (ya sincronizado)
-                const token = session?.accessToken;
+                const { data } = await supabase.auth.getSession();
+                const token = data.session?.access_token;
 
                 const response = await fetch(`${API_BASE}/api/call-tutor-pipeline`, {
                     method: 'POST',
@@ -117,7 +123,8 @@ export const useTutor = (numericLevelId: number, /*onUpdateMetrics: (m: TutorMet
 
             // Get active Supabase token
             // Usamos el token que viene de la sesión de NextAuth (ya sincronizado)
-            const token = session?.accessToken;
+            const { data } = await supabase.auth.getSession();
+            const token = data.session?.access_token;
 
             const blob = new Blob([new Float32Array(audioBuffer)], { type: 'application/octet-stream' });
             const response = await fetch(`${API_BASE}/api/tutor/verify`, {

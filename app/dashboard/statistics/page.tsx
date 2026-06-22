@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Sidebar from "../../components/Sidebar";
-import { useSession } from "next-auth/react";
+import { supabase } from "@/app/utils/supabase";
 import AvgScore from "../../components/charts/AvgScore";
 import { LevelStat } from "@/app/types/statistics";
 import ProgressMastery from "@/app/components/charts/ProgressMastery";
@@ -16,44 +16,43 @@ interface StatsData {
 }
 
 export default function StatisticsPage() {
-    const { data: session } = useSession();
+
+
     const [currentCard, setCurrentCard] = useState(0);
     const [stats, setStats] = useState<StatsData | null>(null);
     const [levelHistory, setLevelHistory] = useState<LevelStat[]>([]);
 
     useEffect(() => {
-        const extendedSession = session as any;
+        async function loadStats() {
+            // Obtener sesión de Supabase
+            const { data: { session } } = await supabase.auth.getSession();
 
-        // Corregido: Evaluamos sobre extendedSession para evitar problemas de tipos
-        if (session?.user?.id && extendedSession?.accessToken) {
-            const userId = session.user.id;
-            const token = extendedSession.accessToken;
+            if (session?.user?.id) {
+                const userId = session.user.id;
+                // Nota: Asumiendo que el backend espera el token de Supabase en el header
+                const token = session.access_token;
 
-            const headers: HeadersInit = {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            };
+                const headers: HeadersInit = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                };
 
-            // Fetch Evaluation Stats
-            fetch(`${API_BASE}/api/get-evaluation-stats?userId=${userId}`, { headers })
-                .then(async res => {
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    return res.json();
-                })
-                .then(data => setStats(data))
-                .catch(err => console.error("Error fetching stats:", err));
+                // Fetch Evaluation Stats
+                fetch(`${API_BASE}/api/get-evaluation-stats?userId=${userId}`, { headers })
+                    .then(res => res.json())
+                    .then(data => setStats(data))
+                    .catch(err => console.error("Error fetching stats:", err));
 
-            // Fetch Level History
-            fetch(`${API_BASE}/api/get-level-history?userId=${userId}`, { headers })
-                .then(async res => {
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    return res.json();
-                })
-                .then(data => setLevelHistory(data || []))
-                .catch(err => console.error("Error fetching level history:", err));
+                // Fetch Level History
+                fetch(`${API_BASE}/api/get-level-history?userId=${userId}`, { headers })
+                    .then(res => res.json())
+                    .then(data => setLevelHistory(data || []))
+                    .catch(err => console.error("Error fetching level history:", err));
+            }
         }
-    }, [session]);
 
+        loadStats();
+    }, []);
     const cards = [
         { title: "Global Knowledge", subtitle: "Average Score & Complexity" },
         { title: "Progress Mastery", subtitle: "Time (2 years aprox.) vs Levels Reached" },

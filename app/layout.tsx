@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Providers } from "./providers";
 import Script from 'next/script'
 
 // Add this at the very top of your file, after your imports
@@ -36,7 +35,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col"><Providers>{children}</Providers>{/* Load Lemon.js for the checkout overlay */}
+      <body className="min-h-full flex flex-col">{children}{/* Load Lemon.js for the checkout overlay */}
       </body>
     </html>
   );

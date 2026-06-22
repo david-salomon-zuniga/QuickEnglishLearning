@@ -1,6 +1,6 @@
 "use client"
 import { useState, useMemo } from "react"
-import { signIn } from "next-auth/react"
+import { supabase } from "@/app/utils/supabase";
 import Link from "next/link" // ADD THIS IMPORT
 
 export default function RegisterPage() {
@@ -26,27 +26,16 @@ export default function RegisterPage() {
         if (agreed && isPasswordValid) {
             setLoading(true);
             try {
-                // Protocol: Use redirect: false to prevent the Configuration error 
-                // from hijacking the UI before we can check the specific error string.
-                const result = await signIn("credentials", {
+                const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
-                    isRegistration: "true", // Flag added to trigger EmailAlreadyInUse error in authorize()
-                    redirect: false,
-                }) as any;
-                console.log("DEBUG RESULT ERROR:", result?.error); // Añade esto
-                if (result?.error) {
-                    // Protocol: NextAuth v5 replaces custom errors with "CredentialsSignin" 
-                    // when using the Credentials provider.
-                    if (result.error.includes("EmailAlreadyInUse") || result.error === "CredentialsSignin") {
-                        alert("This email is already registered. Please sign in instead.");
-                    } else if (result.error === "Configuration") {
-                        console.error("Auth Configuration Error: Check AUTH_SECRET and environment variables.");
-                    } else {
-                        console.error("Registration failed:", result.error);
-                    }
-                } else if (result?.ok) {
-                    // Manual redirect on success
+                });
+
+                if (error) {
+                    console.error("Registration failed:", error.message);
+                    alert(error.message); // Muestra el error de Supabase (ej: usuario ya existe)
+                } else if (data.user) {
+                    // Registro exitoso
                     window.location.href = "/dashboard";
                 }
             } catch (error) {

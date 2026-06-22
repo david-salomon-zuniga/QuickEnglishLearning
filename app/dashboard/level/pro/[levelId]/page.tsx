@@ -1,5 +1,4 @@
 "use client";
-import { useSession } from "next-auth/react";
 import { useState, useEffect, useMemo, use } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -31,11 +30,29 @@ export default function ProLevelPage({ params }: { params: Promise<{ levelId: st
     const numericLevelId = Number(resolvedParams.levelId);
 
     // 2. Standard Hooks (Next-auth, navigation, etc.)
-    const { data: session } = useSession();
+    // 3. State Management
+    const [session, setSession] = useState<any>(null); // Nuevo estado de sesión
+    const [status, setStatus] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
     const searchParams = useSearchParams();
+
+    // Efecto para escuchar la sesión de Supabase
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            setStatus(session ? "authenticated" : "unauthenticated");
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+            setStatus(session ? "authenticated" : "unauthenticated");
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
     const router = useRouter();
 
-    const userId = session?.user?.id || "";
+    const userId = useMemo(() => session?.user?.id || "", [session]);
 
     // 3. State Management
     const [isTutorActive, setIsTutorActive] = useState(false);
@@ -57,7 +74,7 @@ export default function ProLevelPage({ params }: { params: Promise<{ levelId: st
     const isVocabLevel = numericLevelId >= 4;
 
     // 1. Obtén el token correctamente
-    const token = (session as any)?.accessToken; // Asegúrate de que esto tenga valor
+    const token = (session as any)?.access_token; // Nota: en Supabase suele ser access_token
 
     // Font scaling logic specifically for Levels 42 and 43
     const getFontSize = (text: string) => {
@@ -140,7 +157,7 @@ export default function ProLevelPage({ params }: { params: Promise<{ levelId: st
             }
         }
         fetchProLevel();
-    }, [numericLevelId]);
+    }, [numericLevelId, session, status]);
 
     const {
         step,
@@ -157,7 +174,7 @@ export default function ProLevelPage({ params }: { params: Promise<{ levelId: st
         currentLevelContent,
         isVocabLevel,
         userId: userId,
-        token: token, // <--- ESTO ESTABA FALTANDO O VACÍO
+        token: (session as any)?.access_token, // Asegúrate de usar access_token en lugar de accessToken si es la respuesta de Supabase
         initialStep,
         initialSubstep
     });
@@ -275,7 +292,7 @@ export default function ProLevelPage({ params }: { params: Promise<{ levelId: st
         setLoading(true);
 
         const sessionAny = session as any;
-        const token = sessionAny?.accessToken;
+        const token = sessionAny?.access_token; // <--- Cambiado de accessToken a access_token
 
         // Pasamos el token si existe, si no, la función interna lo resolverá con Supabase
         await updateProgress(userId, 1, 0, 0, token);
@@ -288,6 +305,9 @@ export default function ProLevelPage({ params }: { params: Promise<{ levelId: st
     };
 
     if (!session || loading) return <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">Syncing Pro Experience...</div>;
+
+    if (status === "loading" || loading) return <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">Syncing Pro Experience...</div>;
+    if (status === "unauthenticated") return <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">No autorizado</div>;
 
     if (numericLevelId !== null && maxLevel !== null && numericLevelId > maxLevel) {
         return (

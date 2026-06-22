@@ -1,5 +1,4 @@
 "use client";
-import { useSession } from "next-auth/react";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -24,7 +23,28 @@ import { VideoPractice } from "@/app/components/practice/VideoPractice";
 import { TextPractice } from "@/app/components/practice/TextPractice";
 
 export default function LevelPage() {
-    const { data: session, status } = useSession();
+    // Cambio: Eliminamos useSession() y añadimos estados locales
+    const [session, setSession] = useState<any>(null);
+    const [status, setStatus] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
+
+    // Cambio: Efecto para obtener la sesión de Supabase y escuchar cambios
+    useEffect(() => {
+        // 1. Obtener sesión inicial
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            setStatus(session ? "authenticated" : "unauthenticated");
+        });
+
+        // 2. Suscribirse a cambios de autenticación
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+            setStatus(session ? "authenticated" : "unauthenticated");
+        });
+
+        // 3. Limpiar suscripción al desmontar
+        return () => subscription.unsubscribe();
+    }, []);
+
     const userId = session?.user?.id || "";
     const paramsData = useParams();
     const router = useRouter();
@@ -62,7 +82,7 @@ export default function LevelPage() {
                 setLoading(true);
 
                 // 1. Extraemos el token inyectado en NextAuth
-                const token = (session as any)?.accessToken;
+                const token = session?.access_token;
 
 
 

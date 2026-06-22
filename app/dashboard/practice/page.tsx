@@ -5,12 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/app/utils/supabase";
 import { saveEvaluation } from "@/app/lib/progress";
-import { useSession } from "next-auth/react";
 
 function PracticeContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { data: session, status } = useSession();
+
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     // --- State ---
@@ -47,18 +46,6 @@ function PracticeContent() {
 
     // --- Data Fetching Guarded by Session ---
     useEffect(() => {
-        if (status === "loading") return;
-
-        if (status === "unauthenticated" || !session?.user?.id) {
-            console.error("❌ [PRACTICE] Usuario no autenticado. Redirigiendo...");
-            router.push("/dashboard");
-            return;
-        }
-
-        setUserId(session.user.id);
-        const rawParam = searchParams.get("level");
-        const urlLevel = rawParam && !isNaN(Number(rawParam)) ? Number(rawParam) : 1;
-
         async function loadPractice() {
             setLoading(true);
             setQuestions([]);
@@ -66,7 +53,19 @@ function PracticeContent() {
             setSelectedOption(null);
             setShowFeedback(false);
 
-            console.log(`🔍 [PRACTICE] Solicitando nivel ${urlLevel} para usuario ${session?.user?.id}`);
+            // 1. Obtener sesión de Supabase
+            const { data: { session } } = await supabase.auth.getSession();
+
+            // 2. Validación de usuario
+            if (!session?.user?.id) {
+                console.error("❌ [PRACTICE] Usuario no autenticado. Redirigiendo...");
+                router.push("/dashboard");
+                return;
+            }
+
+            setUserId(session.user.id);
+            const rawParam = searchParams.get("level");
+            const urlLevel = rawParam && !isNaN(Number(rawParam)) ? Number(rawParam) : 1;
 
             const { data: practiceInfo, error: practiceError } = await supabase
                 .from('practice')
@@ -137,7 +136,7 @@ function PracticeContent() {
         }
 
         loadPractice();
-    }, [searchParams, router, session, status]);
+    }, [searchParams, router]); // Dependencias limpias
 
     const currentQuestion = questions[currentQuestionIndex] || null;
 
@@ -193,11 +192,8 @@ function PracticeContent() {
             };
 
             try {
-                // 🔥 Corregido: Extraemos y enviamos de manera segura el accessToken de Next-Auth
-                const extendedSession = session as any;
-                const token = extendedSession?.accessToken;
-
-                await saveEvaluation(userId, payload, token);
+                // Supabase maneja el token automáticamente en el cliente configurado
+                await saveEvaluation(userId, payload);
             } catch (err) {
                 console.error("Error saving evaluation:", err);
             }

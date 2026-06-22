@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { updateProgress } from "../lib/progress";
+import { supabase } from "@/app/utils/supabase"; // Importar cliente de supabase
 
 interface UseLevelNavigationProps {
     numericLevelId: number;
