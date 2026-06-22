@@ -2,6 +2,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/app/utils/supabase";
 
 export default function ProfilePage() {
 
@@ -10,36 +11,29 @@ export default function ProfilePage() {
 
     const handleDeleteAccount = async () => {
         const confirmed = window.confirm(
-            "Are you sure you want to permanently delete your account? This will erase all your progress and data. This action cannot be undone."
+            "Are you sure you want to permanently delete your account? This action cannot be undone."
         );
 
         if (!confirmed) return;
 
         setLoading(true);
         try {
-            // This calls the API route we created in step 1
-            const res = await fetch("/api/delete-user", {
-                method: "DELETE", // Coincide con lo que espera tu Go
-                headers: { "Content-Type": "application/json" }
-            });
+            // 1. Delete user from Supabase Auth
+            const { error } = await supabase.auth.admin.deleteUser(
+                (await supabase.auth.getUser()).data.user?.id || ""
+            );
 
-            // LOG THE RESPONSE STATUS
-            console.log("DEBUG: Response status:", res.status);
+            if (error) throw error;
 
-            if (res.ok) {
-                router.push("/");
-                router.refresh();
-            } else {
-                // GET THE ACTUAL ERROR FROM THE BACKEND
-                const errorData = await res.text();
-                console.error("DEBUG: Backend returned error:", errorData);
-                alert("Error: " + errorData);
-                alert("Error deleting account. Please contact support.");
-            }
+            // 2. Clear local session
+            await supabase.auth.signOut();
+
+            // 3. Redirect
+            router.push("/");
+            router.refresh();
         } catch (err) {
-            console.error("DEBUG: Frontend fetch error:", err);
-            console.error(err);
-            alert("An unexpected error occurred.");
+            console.error("Delete error:", err);
+            alert("Failed to delete account. Please contact support.");
         } finally {
             setLoading(false);
         }
