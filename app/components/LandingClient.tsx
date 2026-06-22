@@ -41,18 +41,18 @@ export default function LandingClient() {
             <section className="py-16 px-6 md:px-10 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
                 <div className="p-8 rounded-2xl bg-gray-50 border border-gray-100 text-center md:text-left">
                     <div className="text-4xl mb-4 text-blue-500">⚡</div>
-                    <h3 className="text-xl font-bold mb-2">High Performance</h3>
-                    <p className="text-gray-600">Built with Go for lightning-fast responses and zero lag.</p>
+                    <h3 className="text-xl font-bold mb-2">Pro Access: Unlimited Sessions</h3>
+                    <p className="text-gray-600">Unlock unlimited conversations with Amy and remove time limits on your daily practice sessions.</p>
                 </div>
                 <div className="p-8 rounded-2xl bg-gray-50 border border-gray-100 text-center md:text-left">
                     <div className="text-4xl mb-4 text-blue-500">📚</div>
-                    <h3 className="text-xl font-bold mb-2">Dual Focus</h3>
-                    <p className="text-gray-600">Master both English and Spanish simultaneously with curated paths.</p>
+                    <h3 className="text-xl font-bold mb-2">Advanced Pronunciation Analysis</h3>
+                    <p className="text-gray-600">Receive detailed, real-time feedback on your pronunciation and fluency, designed to accelerate your learning.</p>
                 </div>
                 <div className="p-8 rounded-2xl bg-gray-50 border border-gray-100 text-center md:text-left">
                     <div className="text-4xl mb-4 text-blue-500">🤖</div>
-                    <h3 className="text-xl font-bold mb-2">Smart Logic</h3>
-                    <p className="text-gray-600">Our backend engine adapts to your learning speed.</p>
+                    <h3 className="text-xl font-bold mb-2">Practice your learning</h3>
+                    <p className="text-gray-600">Access a summary practice to see common speech exercises.</p>
                 </div>
             </section>
 
