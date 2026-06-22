@@ -49,7 +49,7 @@ export default async function proxy(request: NextRequest) {
 
         // If there is an error, redirect to login to be safe, not the terms page
         if (profileError || !profile) {
-            return NextResponse.redirect(new URL('/login', request.url));
+            return NextResponse.redirect(new URL('/', request.url));
         }
 
         // Only redirect if NOT accepted and NOT on the page
