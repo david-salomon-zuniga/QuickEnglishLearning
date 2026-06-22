@@ -22,9 +22,14 @@ export default function AcceptTermsPage() {
 
             // Inside handleAccept
             if (!error) {
-                // Force a complete browser refresh to the dashboard
-                // This ignores all client-side routing caches
-                window.location.assign('/dashboard');
+                // FORCE SESSION REFRESH
+                // This ensures the next request to middleware sees the updated state
+                await supabase.auth.refreshSession();
+
+                // Wait a split second to ensure state settles
+                setTimeout(() => {
+                    window.location.assign('/dashboard');
+                }, 100);
             } else {
                 alert("Error saving your acceptance. Please try again.");
                 setLoading(false);
