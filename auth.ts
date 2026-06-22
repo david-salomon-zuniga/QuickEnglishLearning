@@ -121,7 +121,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 httpOnly: true,
                 sameSite: "lax",
                 path: "/",
-                secure: false, // Set to false because we are on http (localhost), not https
+                secure: process.env.NODE_ENV === "production", // Set to false because we are on http (localhost), not https
             },
         },
     },
@@ -175,14 +175,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.termsAccepted = (user as any).termsAccepted;
                 token.accessToken = account.access_token || (user as any).token || "";
             }
-            // 2. Si no hay login reciente, recuperamos del "puente" de Supabase
-            else {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session?.access_token) {
-                    token.accessToken = session.access_token;
-                }
-            }
-
             // 3. Rotación lógica (Solo si no tenemos token válido)
             if (!token.accessToken && token.refreshToken && token.refreshToken !== "manual_session") {
                 return refreshAccessToken(token);
