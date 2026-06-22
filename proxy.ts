@@ -1,8 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-
+export default async function proxy(request: NextRequest) {
+    console.log("El middleware está vivo")
     // 1. Si es la ruta de callback, permite el paso inmediato
     if (request.nextUrl.pathname.startsWith('/auth/callback')) {
         return NextResponse.next();
