@@ -32,30 +32,32 @@ export default function RegisterPage() {
 
         setLoading(true);
         try {
-            // 1. Attempt to sign up
+            // 1. Attempt to Sign Up
             const { data, error } = await supabase.auth.signUp({ email, password });
 
-            if (error?.message.includes("User already registered")) {
-                // 2. Scenario: User exists, but needs to set password.
-                // We use signInWithPassword. If the user has no password set, 
-                // this might fail. You must use 'sendPasswordResetEmail' 
-                // or an 'invite' flow if they are new.
-                const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-
-                if (signInError) {
-                    alert("This email is already registered. Please use 'Forgot Password' to set your initial password.");
-                    window.location.href = "/forgot-password"; // ADD THIS
+            if (error) {
+                // IF ALREADY REGISTERED: Do NOT try to sign in. Just redirect.
+                if (error.message.includes("User already registered")) {
+                    alert("This email is already registered. Redirecting to password recovery.");
+                    window.location.href = "/forgot-password";
                     return;
                 }
+                // For other errors (like invalid email format)
+                alert(error.message);
+                return;
             }
 
-            // 3. Update the custom fields in your 'profiles' table
+            // 2. Only run this if signUp was SUCCESSFUL
             const { error: updateError } = await supabase
                 .from('profiles')
                 .update({ terms_accepted: true })
-                .eq('email', email);
+                .eq('id', data.user!.id); // Use the ID returned from success
 
-            if (!updateError) window.location.href = "/dashboard";
+            if (updateError) {
+                console.error("Update failed:", updateError);
+            }
+
+            window.location.href = "/dashboard";
 
         } catch (err) {
             console.error(err);
