@@ -28,27 +28,39 @@ export default function RegisterPage() {
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!agreed || !isPasswordValid) return;
 
-        if (agreed && isPasswordValid) {
-            setLoading(true);
-            try {
-                const { data, error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                });
+        setLoading(true);
+        try {
+            // 1. Attempt to sign up
+            const { data, error } = await supabase.auth.signUp({ email, password });
 
-                if (error) {
-                    console.error("Registration failed:", error.message);
-                    alert(error.message); // Muestra el error de Supabase (ej: usuario ya existe)
-                } else if (data.user) {
-                    // Registro exitoso
-                    window.location.href = "/dashboard";
+            if (error?.message.includes("User already registered")) {
+                // 2. Scenario: User exists, but needs to set password.
+                // We use signInWithPassword. If the user has no password set, 
+                // this might fail. You must use 'sendPasswordResetEmail' 
+                // or an 'invite' flow if they are new.
+                const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+                if (signInError) {
+                    alert("This email is already registered. Please use 'Forgot Password' to set your initial password.");
+                    window.location.href = "/forgot-password"; // ADD THIS
+                    return;
                 }
-            } catch (error) {
-                console.error("Auth Error:", error);
-            } finally {
-                setLoading(false);
             }
+
+            // 3. Update the custom fields in your 'profiles' table
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ terms_accepted: true })
+                .eq('email', email);
+
+            if (!updateError) window.location.href = "/dashboard";
+
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 
