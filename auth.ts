@@ -135,44 +135,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             else if (new URL(url).origin === baseUrl) return url;
             return baseUrl;
         }, async signIn({ user, account }: any) {
-            // 1. Inicializar Supabase para obtener el token real
-            // Nota: Asegúrate de que este import sea el correcto para tu entorno de servidor
-            const { supabase } = await import('./app/utils/supabase'); // Ajusta la ruta según tu estructura
+            // 1. Credentials no requiere validación extra aquí
+            if (account?.provider === "credentials") return true;
 
-            // Obtenemos la sesión actual
-            const { data: { session } } = await supabase.auth.getSession();
-            const supabaseToken = session?.access_token;
-
-            // 2. Lógica para Credentials
-            if (account?.provider === "credentials") {
-                return true;
-            }
-
-            // 3. Google OAuth: Validar contra tu API de Go usando el token real de Supabase
+            // 2. Google: Confía en los datos que Google te envía
             if (account?.provider === "google") {
                 try {
-                    // 1. Intentar buscar o crear el usuario en tu API de Go
                     const res = await fetch(`${API_BASE}/api/upsert-user`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            id: user.id, // Supabase Auth ID
+                            id: user.id,
                             email: user.email,
                             name: user.name,
-                            terms_accepted: true // Google users aceptan implícitamente
+                            terms_accepted: true
                         }),
                     });
 
-                    if (res.ok) return true; // ¡Permite el ingreso!
+                    if (res.ok) return true;
 
-                    console.error("❌ Falló el upsert de Google en Go:", await res.text());
-                    return false;
+                    // Si llega aquí, es porque tu API de Go devolvió un error (4xx o 5xx)
+                    console.error("❌ API de Go rechazó el upsert:", await res.text());
+                    return false; // ESTO CAUSA EL 403 ACCESS DENIED
                 } catch (error) {
-                    console.error("Auth Backend Error:", error);
+                    console.error("❌ Error de conexión con API de Go:", error);
                     return false;
                 }
             }
-
             return false;
         },
         async jwt({ token, user, account }) {
