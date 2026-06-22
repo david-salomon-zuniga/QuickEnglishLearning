@@ -5,11 +5,6 @@ import Link from "next/link" // ADD THIS IMPORT
 
 export default function RegisterPage() {
 
-    // This will run only once when the page loads
-    useEffect(() => {
-        alert("You must accept terms and conditions to complete the registration and use the app.");
-    }, []);
-
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);

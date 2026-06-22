@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import { supabase } from "@/app/utils/supabase"; // Use your existing supabase client
 import { API_BASE } from '@/lib/api';
 
 export default function ForgotPasswordPage() {
@@ -11,21 +12,17 @@ export default function ForgotPasswordPage() {
         e.preventDefault();
         setLoading(true);
 
-        try {
-            const res = await fetch(`${API_BASE}/api/forgot-password`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }), // RESOLVED: email now exists in scope
-            });
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            // Ensure this URL is added to your Supabase Dashboard "Redirect URLs"
+            redirectTo: `${window.location.origin}/update-password`,
+        });
 
-            if (res.ok) {
-                alert("If that email exists, a reset link has been sent.");
-            }
-        } catch (error) {
-            console.error("Reset request error:", error);
-        } finally {
-            setLoading(false);
+        if (error) {
+            alert(error.message);
+        } else {
+            alert("Check your email for the reset link.");
         }
+        setLoading(false);
     };
 
     return (
