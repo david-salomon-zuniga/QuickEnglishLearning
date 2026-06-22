@@ -21,12 +21,19 @@ export default function AcceptTermsPage() {
                 .eq('id', user.id);
 
             if (!error) {
-                router.push('/dashboard');
+                // 1. Refresh the router to clear any cached auth state
+                router.refresh();
+
+                // 2. Use window.location.href for a hard navigation
+                // This forces the Guard/Middleware to re-run from scratch
+                window.location.href = '/dashboard';
             } else {
                 alert("Error saving your acceptance. Please try again.");
+                setLoading(false);
             }
+        } else {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     return (
