@@ -4,6 +4,14 @@ import { NextResponse } from "next/server"
 
 // Next.js espera la exportación por defecto en el archivo proxy
 export default auth((req) => {
+
+    const path = req.nextUrl.pathname;
+
+    // 🔥 IGNORAR VALIDACIÓN EN CALLBACK DE AUTH
+    if (path.includes("/auth/callback") || path === "/login" || path === "/register") {
+        return NextResponse.next();
+    }
+
     const isLandingPage = req.nextUrl.pathname === "/"
 
     if (isLandingPage) {
@@ -35,5 +43,5 @@ export const config = {
     // Exclude static assets, but allow /api/delete-user to pass through
     //matcher: ["/((?!_next/static|_next/image|favicon.ico|api/).*)"],
     // Only run middleware on dashboard or auth-sensitive pages
-    matcher: ["/dashboard/:path*", "/login", "/register"],
+    matcher: ["/dashboard/:path*"],
 }
