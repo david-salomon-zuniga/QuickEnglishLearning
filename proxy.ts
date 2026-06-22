@@ -35,14 +35,20 @@ export default async function proxy(request: NextRequest) {
 
     // Add this inside your proxy function, after getting the session
     if (session) {
-        const { data: profile } = await supabase
+        // Add { cache: 'no-store' } logic or simply use a fresh call
+        const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('terms_accepted')
             .eq('id', session.user.id)
             .single();
 
-        // 1. If terms NOT accepted AND not already on the accept-terms page
-        if (profile && !profile.terms_accepted && request.nextUrl.pathname !== '/accept-terms') {
+        // If there is an error, we stay safe (redirect to terms to be sure)
+        if (profileError || !profile) {
+            return NextResponse.redirect(new URL('/accept-terms', request.url));
+        }
+
+        // Only redirect if NOT accepted and NOT on the page
+        if (!profile.terms_accepted && request.nextUrl.pathname !== '/accept-terms') {
             return NextResponse.redirect(new URL('/accept-terms', request.url));
         }
     }

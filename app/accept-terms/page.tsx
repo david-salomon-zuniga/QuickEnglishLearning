@@ -22,14 +22,11 @@ export default function AcceptTermsPage() {
 
             // Inside handleAccept
             if (!error) {
-                // FORCE SESSION REFRESH
-                // This ensures the next request to middleware sees the updated state
                 await supabase.auth.refreshSession();
 
-                // Wait a split second to ensure state settles
-                setTimeout(() => {
-                    window.location.assign('/dashboard');
-                }, 100);
+                // Force browser to treat this as a brand new URL request
+                const timestamp = new Date().getTime();
+                window.location.assign(`/dashboard?t=${timestamp}`);
             } else {
                 alert("Error saving your acceptance. Please try again.");
                 setLoading(false);
