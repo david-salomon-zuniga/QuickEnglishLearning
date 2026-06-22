@@ -33,6 +33,11 @@ export default async function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
+    // 1. Check if the user is already on the target page to prevent loops
+    if (request.nextUrl.pathname === '/accept-terms') {
+        return response; // Allow them to stay on the page
+    }
+
     // Add this inside your proxy function, after getting the session
     if (session) {
         // Add { cache: 'no-store' } logic or simply use a fresh call
@@ -42,9 +47,9 @@ export default async function proxy(request: NextRequest) {
             .eq('id', session.user.id)
             .single();
 
-        // If there is an error, we stay safe (redirect to terms to be sure)
+        // If there is an error, redirect to login to be safe, not the terms page
         if (profileError || !profile) {
-            return NextResponse.redirect(new URL('/accept-terms', request.url));
+            return NextResponse.redirect(new URL('/login', request.url));
         }
 
         // Only redirect if NOT accepted and NOT on the page
