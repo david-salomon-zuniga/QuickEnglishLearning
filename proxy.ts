@@ -33,6 +33,21 @@ export default async function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
+    // Add this inside your proxy function, after getting the session
+    if (session) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('terms_accepted')
+            .eq('id', session.user.id)
+            .single();
+
+        // 1. If terms NOT accepted AND not already on the accept-terms page
+        if (profile && !profile.terms_accepted && request.nextUrl.pathname !== '/accept-terms') {
+            return NextResponse.redirect(new URL('/accept-terms', request.url));
+        }
+    }
+
+
     return response
 }
 
