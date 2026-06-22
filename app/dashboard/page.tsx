@@ -61,6 +61,7 @@ export default async function DashboardPage() {
 
     // 3. Safeguard check
     if (!termsAccepted) {
+        alert("Please accept the terms and conditions to proceed.");
         redirect("/register");
     }
 
