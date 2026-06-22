@@ -4,6 +4,9 @@ import { supabase } from "@/app/utils/supabase";
 import Link from "next/link" // ADD THIS IMPORT
 
 export default function RegisterPage() {
+
+    alert("You must accept terms and conditions to complete the registration and use the app.");
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [agreed, setAgreed] = useState(false);
