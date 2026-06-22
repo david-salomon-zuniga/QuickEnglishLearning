@@ -20,13 +20,11 @@ export default function AcceptTermsPage() {
                 .update({ terms_accepted: true })
                 .eq('id', user.id);
 
+            // Inside handleAccept
             if (!error) {
-                // 1. Refresh the router to clear any cached auth state
-                router.refresh();
-
-                // 2. Use window.location.href for a hard navigation
-                // This forces the Guard/Middleware to re-run from scratch
-                window.location.href = '/dashboard';
+                // Force a complete browser refresh to the dashboard
+                // This ignores all client-side routing caches
+                window.location.assign('/dashboard');
             } else {
                 alert("Error saving your acceptance. Please try again.");
                 setLoading(false);
