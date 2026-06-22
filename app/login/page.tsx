@@ -2,12 +2,9 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
+// IMPORTA ESTO: El cliente configurado para cookies
+import { supabase } from "@/app/utils/supabase"
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");

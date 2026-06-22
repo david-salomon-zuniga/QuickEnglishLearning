@@ -1,29 +1,40 @@
-import { auth } from "@/auth"
-import { NextResponse } from "next/server"
-import { supabase } from "@/app/utils/supabase"
+// app/api/checkout/route.ts
+import { NextResponse } from "next/server";
+import { createServerClient, type CookieOptions } from '@supabase/ssr'; // Usa el cliente SSR oficial
+import { cookies } from 'next/headers';
 import { API_BASE } from '@/lib/api';
 
-export async function POST() {
-    const session = await auth()
-    // Check for both session AND the specific user ID
+export async function POST(request: Request) {
+    const cookieStore = await cookies();
+
+    // Crear cliente de Supabase para validar la sesión actual
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) { return cookieStore.get(name)?.value }
+            }
+        }
+    );
+
+    const { data: { session } } = await supabase.auth.getSession();
+
+    // Validamos con la sesión de SUPABASE, no de Auth.js
     if (!session?.user?.id) {
-        return new NextResponse("Unauthorized", { status: 401 })
+        return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Extraemos la sesión activa de Supabase para obtener el token JWT
-    const { data: { session: sbSession } } = await supabase.auth.getSession();
-    const token = sbSession?.access_token;
-
-    // Now TypeScript knows session.user.id is a string
+    // Ahora enviamos el token de Supabase a tu backend en Go
     const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            ...(token && { 'Authorization': `Bearer ${token}` })
+            "Authorization": `Bearer ${session.access_token}`
         },
         body: JSON.stringify({ userId: session.user.id }),
-    })
+    });
 
-    const { url } = await response.json()
-    return NextResponse.json({ url })
+    const data = await response.json();
+    return NextResponse.json(data);
 }
