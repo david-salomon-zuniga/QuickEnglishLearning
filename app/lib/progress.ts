@@ -1,7 +1,4 @@
 import { supabase } from "@/app/utils/supabase";
-
-
-import { getSession } from "next-auth/react";
 import { API_BASE } from '@/lib/api';
 
 export const updateProgress = async (userId: string, newLevel: number, newStep: number, newSubStep: number, passedToken?: string) => {
