@@ -1,34 +1,33 @@
-import { auth } from "@/auth"
-import { NextResponse } from "next/server"
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export default auth((req) => {
-    const path = req.nextUrl.pathname;
+export async function middleware(request: NextRequest) {
+    let response = NextResponse.next({ request })
 
-    // 1. ZONA PÚBLICA: Rutas que no requieren ninguna validación
-    const isPublicPage = path === "/" || path === "/login" || path === "/register" || path.includes("/auth/callback");
-    if (isPublicPage) {
-        return NextResponse.next();
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) { return request.cookies.get(name)?.value },
+                set(name: string, value: string, options: CookieOptions) {
+                    response.cookies.set({ name, value, ...options })
+                },
+                remove(name: string, options: CookieOptions) {
+                    response.cookies.set({ name, value: '', ...options })
+                },
+            },
+        }
+    )
+
+    const { data: { session } } = await supabase.auth.getSession()
+
+    // Lógica de protección: Si no hay sesión, al login.
+    if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
+        return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    // 2. VERIFICACIÓN DE SESIÓN (Híbrida: NextAuth o Supabase)
-    const supabaseSession = req.cookies.get('sb-access-token'); // Asegúrate que el nombre sea el correcto
-    const isLoggedIn = !!req.auth || !!supabaseSession;
-
-    // 3. LÓGICA DE PROTECCIÓN (Dashboard)
-    const isDashboard = path.startsWith("/dashboard");
-    if (isDashboard && !isLoggedIn) {
-        return NextResponse.redirect(new URL("/login", req.nextUrl));
-    }
-
-    // 4. LÓGICA DE NEGOCIO (Términos)
-    const hasNotAcceptedTerms = req.auth?.user && (req.auth as any).user.termsAccepted === false;
-    if (isLoggedIn && hasNotAcceptedTerms && path !== "/register") {
-        return NextResponse.redirect(new URL("/register", req.nextUrl));
-    }
-
-    return NextResponse.next();
-})
-
-export const config = {
-    matcher: ["/dashboard/:path*"],
+    return response
 }
+
+export const config = { matcher: ['/dashboard/:path*'] }

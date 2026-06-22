@@ -1,12 +1,11 @@
-import { auth } from "@/auth"
-import { redirect } from "next/navigation"
-import LanguageModal from "../components/LanguageModal"
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import Sidebar from "../components/Sidebar"
 import Link from "next/link";
 import SignOutButton from "../components/SignOutButton"
 import ProButton from "../components/ProButton";
 import LemonSqueezyScript from "../components/LemonSqueezyScript";
-import { supabase } from "@/app/utils/supabase";
 import { API_BASE } from '@/lib/api';
 import ProfileButton from "../components/ProfileButton";
 
@@ -31,15 +30,38 @@ async function getProgress(userId: string, accessToken: string) {
 }
 
 export default async function DashboardPage() {
-    const session = await auth()
+    const cookieStore = await cookies()
 
-    if (!session || !session.user?.id) {
-        redirect("/api/auth/signin")
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return cookieStore.get(name)?.value
+                },
+            },
+        }
+    )
+
+    // Obtener la sesión directamente de Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+
+    // 1. Redirección única si no hay sesión
+    if (!session) {
+        redirect('/login');
     }
 
-    // Server-side safeguard check for terms approval status
-    if ((session.user as any).termsAccepted === false) {
-        redirect("/register")
+    const { user } = session;
+
+    // 2. Acceso a metadatos correctamente
+    // Si 'termsAccepted' está en user_metadata, se accede así:
+    const termsAccepted = user.user_metadata?.termsAccepted ?? false;
+    const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || "User";
+
+    // 3. Safeguard check
+    if (!termsAccepted) {
+        redirect("/register");
     }
 
     const LEMON_SQUEEZY_ENDPOINT = "https://salomonapps.lemonsqueezy.com/checkout/buy/7201c356-e4cf-46e8-9226-72db59fd19b5";
@@ -47,15 +69,10 @@ export default async function DashboardPage() {
 
     // Asegúrate de extraer el token. 
     // NOTA: Dependiendo de tu configuración de auth, el token podría estar en session.accessToken
-    const token = (session as any).accessToken;
-    console.log("DEBUG: Token enviado al backend:", token ? `${token.substring(0, 10)}...` : "TOKEN MISSING");
-
-    if (!token) {
-        console.error("ERROR: No se encontró accessToken en la sesión");
-    }
-
+    // 4. Extracción segura del token (para tu API de Go)
+    const token = session.access_token;
     // Llamada con el token
-    let data = await getProgress(session.user.id, token);
+    let data = await getProgress(user.id, token);
     // Force level to be at least 1 so the URL is never /pro/0
     let currentLevel = Math.max(1, data.level || 1);
     let currentStep = data.step || 0;
@@ -96,7 +113,7 @@ export default async function DashboardPage() {
                 <main className="p-8 overflow-y-auto">
                     <div className="max-w-6xl mx-auto">
                         <h1 className="text-3xl font-bold mb-8 text-gray-800">
-                            Hello, {session.user?.name}!
+                            Hello, {userName}!
                         </h1>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

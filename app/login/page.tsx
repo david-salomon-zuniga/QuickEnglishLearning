@@ -1,6 +1,5 @@
 "use client"
 import { useState } from "react"
-import { signIn } from "next-auth/react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@supabase/supabase-js"
@@ -22,6 +21,7 @@ export default function LoginPage() {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
+                redirectTo: `${window.location.origin}/auth/callback`, // ESTO ES OBLIGATORIO
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
@@ -41,30 +41,18 @@ export default function LoginPage() {
     // LoginPage.tsx - MODO LIMPIO
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
 
-        try {
-            // 1. NextAuth Sign-In: 
-            // authorize() en tu config ya llama a tu API de Go.
-            const result = await signIn("credentials", {
-                email,
-                password,
-                redirect: false,
-            });
-
-            if (result?.error) {
-                alert("Invalid email or password");
-                return;
-            }
-
-            // Si llega aquí, NextAuth YA guardó la sesión y el token en la cookie.
-            router.push("/dashboard");
-
-        } catch (error: any) {
-            console.error("Auth Error:", error);
-        } finally {
-            setLoading(false);
+        if (error) {
+            alert("Error: " + error.message);
+            return;
         }
+
+        // Supabase gestiona la cookie automáticamente
+        router.push("/dashboard");
     };
 
 
