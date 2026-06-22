@@ -37,8 +37,5 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: [
-        '/dashboard/:path*',
-        '/auth/callback' // Añade esta línea
-    ]
+    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|auth/callback|login).*)']
 }
