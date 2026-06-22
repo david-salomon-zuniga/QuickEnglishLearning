@@ -16,7 +16,7 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    /*    const handleGoogleLogin = async () => {
+    const handleGoogleLogin = async () => {
         // Forzamos el flujo de Supabase sin pasar un redirectTo dinámico inicialmente
         // para ver si el error es la URL o el provider.
         const { data, error } = await supabase.auth.signInWithOAuth({
@@ -30,11 +30,11 @@ export default function LoginPage() {
         });
 
         if (error) console.error("Error crítico de Supabase:", error);
-    };*/
+    };
 
-    const handleGoogleLogin = async () => {
+    /*const handleGoogleLogin = async () => {
         signIn("google", { callbackUrl: "/dashboard" });
-    }
+    }*/
 
 
 
