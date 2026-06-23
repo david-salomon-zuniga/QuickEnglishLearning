@@ -258,6 +258,7 @@ const AgenticVoicePipeline = ({
 
             // CRITICAL: Always set 'shouldListen' to TRUE here so the mic opens
             await handleGenerateSpeech(reconstructedQuestion, true);
+
         } catch (error) {
             console.error("Backend Error:", error);
             hasTriggeredRef.current = false; // Permite reintento si falló el inicio
@@ -285,6 +286,7 @@ const AgenticVoicePipeline = ({
             initializationLockRef.current = currentKey;
             console.log("🚀 Initializing Tutor:", currentKey);
             // PASA isTutorActive explícitamente:
+            console.log("🚀 isTutorActive:", isTutorActive);
             triggerTutorFlow(isTutorActive, tutorSpeechCount);
             //}
         }
