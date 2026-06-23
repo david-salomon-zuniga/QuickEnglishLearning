@@ -84,6 +84,7 @@ export const useTutor = (
                     //}
 
                     if (shouldListenAfter && isTutorActive && !isExitingRef.current) {
+                        console.log("✅ IA terminó de hablar. Cambiando isRecordingActive a TRUE.");
                         setIsRecordingActive(true);
                     }
                     isExitingRef.current = false; // Agrega esto

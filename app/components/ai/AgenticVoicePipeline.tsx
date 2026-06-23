@@ -104,6 +104,9 @@ const AgenticVoicePipeline = ({
             isExitingRef.current = false; // <--- CRITICAL: Reset this immediately
             initializationLockRef.current = null;
 
+            // --- AQUÍ RESETEAS EL DISPARADOR ---
+            hasTriggeredRef.current = false;
+
             if (vadRef.current) {
                 vadRef.current.pause();
             }
@@ -152,11 +155,26 @@ const AgenticVoicePipeline = ({
         return intros[Math.floor(Math.random() * intros.length)] + " ";
     };
 
-    const triggerTutorFlow = useCallback(async (count?: number, manualHistory?: string[]) => {
-        console.log("🚦 [PIPELINE] Entrando a triggerTutorFlow. Procesando:", isProcessingRef.current, "Active:", isTutorActive);
-        // 1. Check if processing or missing content
-        if (isProcessingRef.current || !currentLevelContent) return;
-        isProcessingRef.current = true;
+
+    // Define esto dentro del componente (fuera de cualquier efecto)
+    const hasTriggeredRef = useRef(false);
+
+    const triggerTutorFlow = useCallback(async (isActive: boolean, count?: number, manualHistory?: string[]) => {
+        // 2. Usamos el argumento 'isActive' que sabemos que es el real en este instante
+        console.log("🚦 [PIPELINE] Entrando. Tutor activo:", isActive);        // 1. Check if processing or missing content
+        // MODIFICA ESTO:
+        // Si la lógica de negocio requiere que el tutor esté activo, 
+        // no salgas si esTutorActive es false, porque el cambio de estado 
+        // es asíncrono. Confía en isProcessingRef.current únicamente.
+        if (isProcessingRef.current) return;
+
+        // 1. Si ya se disparó una vez, salimos inmediatamente
+        if (hasTriggeredRef.current) return;
+
+        // 2. Marcamos como disparado ANTES de cualquier lógica
+        hasTriggeredRef.current = true;
+
+        console.log("🚦 [PIPELINE] Disparando por única vez.");
 
         // Usamos el 'count' que llega por argumento, 
         // pero si es undefined, leemos del ref para mantener la estabilidad.
@@ -242,7 +260,9 @@ const AgenticVoicePipeline = ({
             await handleGenerateSpeech(reconstructedQuestion, true);
         } catch (error) {
             console.error("Backend Error:", error);
+            hasTriggeredRef.current = false; // Permite reintento si falló el inicio
         } finally {
+
             isProcessingRef.current = false;
         }
     }, []);
@@ -251,33 +271,24 @@ const AgenticVoicePipeline = ({
 
     // 1. UPDATED INITIALIZATION EFFECT
     useEffect(() => {
-        // 1. Guardias: Token, motor listo, y condiciones de tutor
+        // 1. Guardias: Token, motor listo
         if (!tokenRef.current || !isVadReady.current) return;
 
-        const currentKey = `${numericLevelId}-${tutorSpeechCount}`;
-
-        // If user pressed the tutor speaker button,
-        // and tutor isn't trying to load something (initializationLockRef.current i empty)
-        // if we have the material of the class obviously (currentLevelContent)
-        // the sistem isn't busy delivering and bringing data from the API (we aren't on the middle of another operation)
-        if (isTutorActive && isVadReady.current && tokenRef.current && currentLevelContent) {
-            // Solo si no hay un bloqueo previo (para evitar el spam de inicializaciones)
-            if (!initializationLockRef.current && !isProcessingRef.current) {
-                // initializationLockRef.current = "1-0 (for example)"
-                initializationLockRef.current = currentKey;
-                console.log("🚀 Initializing Tutor:", currentKey);
-                // Call the main function that starts the whole process of the speech and API fetch
-                triggerTutorFlow(tutorSpeechCount);
-            }
+        // 2. Solo disparamos si isTutorActive es true. 
+        // Si el log dice "Active: false", es porque este efecto corre antes 
+        // de que el padre termine de actualizar el estado.
+        // Solo disparamos si está activo y NO se ha disparado nunca antes
+        if (isTutorActive && !hasTriggeredRef.current) {
+            console.log("🚀 Primer disparo detectado...");
+            //if (!initializationLockRef.current && !isProcessingRef.current) {
+            const currentKey = `${numericLevelId}-${tutorSpeechCount}`;
+            initializationLockRef.current = currentKey;
+            console.log("🚀 Initializing Tutor:", currentKey);
+            // PASA isTutorActive explícitamente:
+            triggerTutorFlow(isTutorActive, tutorSpeechCount);
+            //}
         }
-
-        // FIX: If the user turns the tutor OFF manually, clear the lock 
-        // so they can press the speaker button again immediately.
-        if (!isTutorActive) {
-            initializationLockRef.current = null;
-        }
-
-    }, [isTutorActive, currentLevelContent, numericLevelId, tutorSpeechCount, token]); // Añadido 'token' como dependencia
+    }, [isTutorActive/*, tutorSpeechCount*/]); // Añadido 'token' como dependencia
 
     // EFFECT A: Create the VAD instance once (and only once)
 
