@@ -34,7 +34,6 @@ interface Props {
 
 // 1. Move the instance variable outside the component scope
 let globalVadInstance: any = null;
-//let isInitializing = false;
 
 const AgenticVoicePipeline = ({
     isTutorActive,
@@ -77,6 +76,15 @@ const AgenticVoicePipeline = ({
     // --- 2. RESTORE SYNCINDEXREF ---
     // Since this isn't in the hook yet, we keep it local to fix the error
     const tutorSpeechCountRef = useRef(tutorSpeechCount);
+
+    // 1. En AgenticVoicePipeline.tsx, crea un ref para la función
+    const handleVerifySpeechRef = useRef(handleVerifySpeech);
+
+    // 2. Actualiza ese ref cada vez que el hook cambie
+    useEffect(() => {
+        handleVerifySpeechRef.current = handleVerifySpeech;
+    }, [handleVerifySpeech]);
+
 
     const currentLevelContent: LevelContent = {
         level: numericLevelId,
@@ -274,7 +282,8 @@ const AgenticVoicePipeline = ({
                     onSpeechEnd: async (audio) => {
                         if (vadRef.current) vadRef.current.pause();
                         setIsRecordingActive(false);
-                        await handleVerifySpeech(audio);
+                        // Usamos .current para garantizar que vemos los estados más frescos
+                        await handleVerifySpeechRef.current(audio);
                     },
                 });
             }

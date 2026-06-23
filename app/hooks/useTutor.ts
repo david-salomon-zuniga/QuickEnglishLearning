@@ -74,11 +74,19 @@ export const useTutor = (
                 audioRef.current = audio;
 
                 audio.onended = () => {
+                    audioRef.current = null;
+                    URL.revokeObjectURL(audioUrl);
+
+                    // 2. REACTIVACIÓN PRECISA DEL VAD
+                    if (vadRef.current) {
+                        console.log("🎙️ IA terminó de hablar. Reactivando VAD...");
+                        vadRef.current.start();
+                    }
+
                     if (shouldListenAfter && isTutorActive && !isExitingRef.current) {
                         setIsRecordingActive(true);
                     }
-                    audioRef.current = null;
-                    URL.revokeObjectURL(audioUrl);
+                    isExitingRef.current = false; // Agrega esto
                     resolve();
                 };
 
@@ -115,7 +123,7 @@ export const useTutor = (
         setIsRecordingActive(false);
     }, [setIsRecordingActive]);
 
-    const handleVerifySpeech = async (audioBuffer: Float32Array) => {
+    const handleVerifySpeech = useCallback(async (audioBuffer: Float32Array) => {
         if (isProcessingRef.current) return;
         isProcessingRef.current = true;
 
@@ -123,10 +131,22 @@ export const useTutor = (
 
             // Get active Supabase token
             // Usamos el token que viene de la sesión de NextAuth (ya sincronizado)
-            const { data } = await supabase.auth.getSession();
-            const token = data.session?.access_token;
+            // 1. Obtener sesión de Supabase
+            const { data: { session } } = await supabase.auth.getSession();
 
+            // 2. Validación crítica
+            if (!session?.access_token) {
+                console.warn("⚠️ No hay token disponible, abortando fetch.");
+                // IMPORTANTE: Debes liberar el flag antes de salir
+                isProcessingRef.current = false;
+                return; // Aborta la ejecución aquí
+            }
+
+
+            // 3. Usa 'session.access_token' directamente, no 'data.session'
+            const token = session.access_token;
             const blob = new Blob([new Float32Array(audioBuffer)], { type: 'application/octet-stream' });
+
             const response = await fetch(`${API_BASE}/api/tutor/verify`, {
                 method: 'POST',
                 body: blob,
@@ -162,12 +182,6 @@ export const useTutor = (
                 await handleGenerateSpeech(result.analysis, false);
                 await new Promise(res => setTimeout(res, 500));
 
-                // Keep charts updated with the result
-                /*onUpdateMetrics({
-                    score: result.score,
-                    successes: result.is_correct ? 1 : 0,
-                    mistakes: result.is_correct ? 0 : 1
-                });8*/
             } else {
                 console.warn("⚠️ [DEBUG VERIFY] result.analysis venía vacío o null");
             }
@@ -182,11 +196,12 @@ export const useTutor = (
             isProcessingRef.current = false;
             isExitingRef.current = false;
 
-            if (!isTutorActive && vadRef.current) {
+            if (vadRef.current) {
+                console.log("🔇 Pausando VAD tras verificación...");
                 vadRef.current.pause();
             }
         }
-    };
+    }, [numericLevelId]); // Solo cambia si el nivel cambia
 
     return {
         isTutorActive,
