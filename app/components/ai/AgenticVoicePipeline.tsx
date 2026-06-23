@@ -320,21 +320,24 @@ const AgenticVoicePipeline = ({
         const syncMic = async () => {
             if (!vadRef.current) return;
             console.log(`🎤 [SYNC] Intentando mic. Tutor: ${isTutorActive}, Recording: ${isRecordingActive}`);
-            // Check the latest state values
-            if (isTutorActive && isRecordingActive && !isExitingRef.current) {
-                console.log("🎤 Mic Starting...");
-                try {
+            // Si el tutor está activo:
+            if (isTutorActive) {
+                // Si estamos grabando, iniciamos. 
+                // Si no estamos grabando, pausamos (pero no destruimos)
+                if (isRecordingActive && !isExitingRef.current) {
+                    console.log("🎤 Mic Starting...");
                     await vadRef.current.start();
-                } catch (e) {
-                    console.error("VAD Start Error:", e);
+                } else {
+                    console.log(`🔇 Mic Pausing... (Razón: Tutor=${isTutorActive}, Recording=${isRecordingActive}, Exiting=${isExitingRef.current})`);
+                    vadRef.current.pause();
                 }
             } else {
-                console.log(`🔇 Mic Pausing... (Razón: Tutor=${isTutorActive}, Recording=${isRecordingActive}, Exiting=${isExitingRef.current})`);
+                // Si el tutor está apagado, aseguramos pausa
                 vadRef.current.pause();
             }
         };
         syncMic();
-    }, [isRecordingActive, isTutorActive]); // Dependencies ensure this runs when recording toggles
+    }, [isRecordingActive, isTutorActive, isExitingRef.current]); // Dependencies ensure this runs when recording toggles
 
     return null;
 };

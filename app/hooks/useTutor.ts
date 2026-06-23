@@ -78,10 +78,10 @@ export const useTutor = (
                     URL.revokeObjectURL(audioUrl);
 
                     // 2. REACTIVACIÓN PRECISA DEL VAD
-                    if (vadRef.current) {
-                        console.log("🎙️ IA terminó de hablar. Reactivando VAD...");
-                        vadRef.current.start();
-                    }
+                    //if (vadRef.current) {
+                    //console.log("🎙️ IA terminó de hablar. Reactivando VAD...");
+                    //vadRef.current.start();
+                    //}
 
                     if (shouldListenAfter && isTutorActive && !isExitingRef.current) {
                         setIsRecordingActive(true);
