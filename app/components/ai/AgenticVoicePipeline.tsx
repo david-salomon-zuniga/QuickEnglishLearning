@@ -66,7 +66,7 @@ const AgenticVoicePipeline = ({
 
     // --- 2. RESTORE SYNCINDEXREF ---
     // Since this isn't in the hook yet, we keep it local to fix the error
-    const syncIndexRef = useRef(tutorSpeechCount);
+    const tutorSpeechCountRef = useRef(tutorSpeechCount);
 
     const currentLevelContent: LevelContent = {
         level: numericLevelId,
@@ -100,7 +100,7 @@ const AgenticVoicePipeline = ({
     }, [isTutorActive, stopAudio]);
 
     useEffect(() => {
-        syncIndexRef.current = tutorSpeechCount;
+        tutorSpeechCountRef.current = tutorSpeechCount;
     }, [tutorSpeechCount]);
 
     // Add this to clear history AND locks when the level OR page index changes
@@ -131,16 +131,23 @@ const AgenticVoicePipeline = ({
         return intros[Math.floor(Math.random() * intros.length)] + " ";
     };
 
-    const triggerTutorFlow = useCallback(async (count: number, manualHistory?: string[]) => {
+    const triggerTutorFlow = useCallback(async (count?: number, manualHistory?: string[]) => {
+
         // 1. Check if processing or missing content
         if (isProcessingRef.current || !currentLevelContent) return;
         isProcessingRef.current = true;
+
+        // Usamos el 'count' que llega por argumento, 
+        // pero si es undefined, leemos del ref para mantener la estabilidad.
+        const activeCount = count ?? tutorSpeechCountRef.current;
+
+        console.log("🚀 Disparando flujo, paso actual:", activeCount);
 
         // 2. Determine which history to use (passed-in or state)
         const activeHistory = manualHistory || lessonHistory;
 
         const studyMaterial = currentLevelContent.content || [];
-        const currentBlock: any = studyMaterial[count] || studyMaterial[0];
+        const currentBlock: any = studyMaterial[activeCount] || studyMaterial[0];
 
         // 3. Build the payload
         let payload: any = {
@@ -208,18 +215,25 @@ const AgenticVoicePipeline = ({
         } finally {
             isProcessingRef.current = false;
         }
-    }, [token, lessonHistory, numericLevelId, currentLevelContent, getGreetIntro, handleGenerateSpeech]);
+    }, []);
+    //"Reconstruye esta función cada vez que uno de estos valores cambie".
+
 
     // 1. UPDATED INITIALIZATION EFFECT
     useEffect(() => {
         const currentKey = `${numericLevelId}-${tutorSpeechCount}`;
 
-        // If tutor is active and lock is empty, START
+        // If user pressed the tutor speaker button,
+        // and tutor isn't trying to load something (initializationLockRef.current i empty)
+        // if we have the material of the class obviously (currentLevelContent)
+        // the sistem isn't busy delivering and bringing data from the API (we aren't on the middle of another operation)
         if (isTutorActive && !initializationLockRef.current && currentLevelContent && !isProcessingRef.current) {
 
+            // initializationLockRef.current = "1-0 (for example)"
             initializationLockRef.current = currentKey;
             console.log("🚀 Initializing Tutor:", currentKey);
 
+            // Call the main function that starts the whole process of the speech and API fetch
             triggerTutorFlow(tutorSpeechCount);
         }
 
