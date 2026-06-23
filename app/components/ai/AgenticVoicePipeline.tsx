@@ -307,7 +307,7 @@ const AgenticVoicePipeline = ({
             }
         };
         syncMic();
-    }, [isRecordingActive, isTutorActive, isAudioPlayingRef.current]); // Dependencies ensure this runs when recording toggles
+    }, [isRecordingActive, isTutorActive, isExitingRef]); // Dependencies ensure this runs when recording toggles
 
     return null;
 };
