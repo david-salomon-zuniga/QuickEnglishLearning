@@ -63,6 +63,12 @@ const AgenticVoicePipeline = ({
     } = useTutor(numericLevelId/*, onUpdateMetrics*/, isTutorActive, setIsTutorActive, isRecordingActive, setIsRecordingActive, lessonHistory, setLessonHistory);
 
     const token = useAuthToken(); // Obtiene el token de la cookie de NextAuth
+    const tokenRef = useRef(token);
+
+    // Sincroniza el ref solo cuando el token realmente cambia
+    useEffect(() => {
+        tokenRef.current = token;
+    }, [token]);
 
     // --- 2. RESTORE SYNCINDEXREF ---
     // Since this isn't in the hook yet, we keep it local to fix the error
@@ -179,7 +185,7 @@ const AgenticVoicePipeline = ({
             //const { data: { session } } = await supabase.auth.getSession();
             //const token = session?.access_token;
 
-            if (!token) {
+            if (!tokenRef.current) {
                 console.error("No hay token disponible, abortando fetch.");
                 return;
             }
@@ -189,7 +195,7 @@ const AgenticVoicePipeline = ({
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` // Ahora sí llegará
+                    'Authorization': `Bearer ${tokenRef.current}` // Ahora sí llegará
                 },
                 body: JSON.stringify(payload)
             });
