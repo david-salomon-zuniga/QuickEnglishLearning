@@ -249,7 +249,7 @@ const AgenticVoicePipeline = ({
             initializationLockRef.current = null;
         }
 
-    }, [isTutorActive, currentLevelContent, triggerTutorFlow, numericLevelId, tutorSpeechCount]);
+    }, [isTutorActive, currentLevelContent, numericLevelId, tutorSpeechCount]);
 
     // EFFECT A: Create the VAD instance once (and only once)
     useEffect(() => {
