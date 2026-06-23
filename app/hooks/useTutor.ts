@@ -105,20 +105,22 @@ export const useTutor = (
                     console.log("✅ [DEBUG] Audio isTutorActive:", isTutorActive);
                     console.log("✅ [DEBUG] Audio isExitingRef.current:", isExitingRef.current);
                     console.log("✅ [DEBUG] Audio terminado o interrumpido.");
+                    // 1. Verificación estricta: ¿Fue este el último audio generado?
+                    if (audioRef.current !== audio) return;
 
-                    // Limpieza crítica
-                    if (audioRef.current === audio) {
-                        audioRef.current = null;
-                    }
+                    console.log("✅ [DEBUG] Audio terminado.");
+
+                    // 2. Limpieza
+                    audioRef.current = null;
                     URL.revokeObjectURL(audioUrl);
 
-                    // MIRA AQUÍ: Solo activa si el audio NO fue bloqueado y si estamos en estado válido
-                    // Añade la condición '!audio.paused' para verificar si realmente sonó
+                    // 3. SOLO activar si no hubo error de Autoplay (audio.paused debe ser false si sonó)
+                    // O si el audio realmente completó su duración
                     if (shouldListenAfter && isTutorActive && !isExitingRef.current && !audio.paused) {
                         console.log("🎤 Activando micrófono tras reproducción exitosa.");
                         setIsRecordingActive(true);
                     } else {
-                        console.warn("⚠️ Audio no se reprodujo o bloqueado, saltando activación de micro.");
+                        console.warn("⚠️ Audio bloqueado o interrumpido, NO activando micrófono.");
                     }
                     resolve();
                 };
