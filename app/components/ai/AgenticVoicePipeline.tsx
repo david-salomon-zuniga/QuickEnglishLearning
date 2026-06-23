@@ -34,6 +34,7 @@ interface Props {
 
 // 1. Move the instance variable outside the component scope
 let globalVadInstance: any = null;
+//let isInitializing = false;
 
 const AgenticVoicePipeline = ({
     isTutorActive,
@@ -256,7 +257,7 @@ const AgenticVoicePipeline = ({
 
     // EFFECT A: Create the VAD instance once (and only once)
     // Define esto fuera del componente, al nivel superior del archivo
-    let globalVadInstance: any = null;
+    //let globalVadInstance: any = null;
 
     // ... dentro del componente AgenticVoicePipeline:
 
