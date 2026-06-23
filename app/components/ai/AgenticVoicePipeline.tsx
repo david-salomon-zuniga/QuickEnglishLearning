@@ -66,6 +66,7 @@ const AgenticVoicePipeline = ({
     } = useTutor(numericLevelId/*, onUpdateMetrics*/, isTutorActive, setIsTutorActive, isRecordingActive, setIsRecordingActive, lessonHistory, setLessonHistory);
 
     const token = useAuthToken(); // Obtiene el token de la cookie de NextAuth
+
     const tokenRef = useRef(token);
 
     // Sincroniza el ref solo cuando el token realmente cambia
@@ -123,13 +124,13 @@ const AgenticVoicePipeline = ({
 
     // Add this to clear history AND locks when the level OR page index changes
     // Keep your existing history/lock cleaner but make it even more aggressive
-    useEffect(() => {
+    /*useEffect(() => {
         setLessonHistory([]);
         setUserMistakes([]);
         initializationLockRef.current = null;
         isExitingRef.current = false;
         isProcessingRef.current = false;
-    }, [numericLevelId]); // Removed tutorSpeechCount from here to prevent loops, let the circuit breaker handle the rest
+    }, [numericLevelId]); */// Removed tutorSpeechCount from here to prevent loops, let the circuit breaker handle the rest
 
     const getGreetIntro = () => {
         const intros = [
@@ -239,6 +240,9 @@ const AgenticVoicePipeline = ({
 
     // 1. UPDATED INITIALIZATION EFFECT
     useEffect(() => {
+        // 1. Guardia de seguridad: Si no hay token, no intentes inicializar
+        if (!tokenRef.current) return;
+
         const currentKey = `${numericLevelId}-${tutorSpeechCount}`;
 
         // If user pressed the tutor speaker button,
@@ -261,7 +265,7 @@ const AgenticVoicePipeline = ({
             initializationLockRef.current = null;
         }
 
-    }, [isTutorActive, currentLevelContent, numericLevelId, tutorSpeechCount]);
+    }, [isTutorActive, currentLevelContent, numericLevelId, tutorSpeechCount, token]); // Añadido 'token' como dependencia
 
     // EFFECT A: Create the VAD instance once (and only once)
     // Define esto fuera del componente, al nivel superior del archivo
