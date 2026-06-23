@@ -57,7 +57,6 @@ const AgenticVoicePipeline = ({
         currentQuestionRef,
         initializationLockRef,
         vadRef,
-        audioRef, // <--- DESESTRUCTURA EL QUE VIENE DEL HOOK
         // We can extract these to satisfy the "Cannot find name" errors
         isExitingRef,
         isProcessingRef
@@ -142,8 +141,6 @@ const AgenticVoicePipeline = ({
 
         const studyMaterial = currentLevelContent.content || [];
         const currentBlock: any = studyMaterial[count] || studyMaterial[0];
-
-
 
         // 3. Build the payload
         let payload: any = {
@@ -262,25 +259,21 @@ const AgenticVoicePipeline = ({
         const syncMic = async () => {
             if (!vadRef.current) return;
 
-            // Comprobamos si hay un audio sonando usando el audioRef real
-            const isAudioPlaying = audioRef.current && !audioRef.current.paused && !audioRef.current.ended;
-
+            // Check the latest state values
             if (isTutorActive && isRecordingActive && !isExitingRef.current) {
-                // SOLO iniciamos mic si NO hay audio sonando
-                if (!isAudioPlaying) {
-                    console.log("🎤 Mic Starting...");
+                console.log("🎤 Mic Starting...");
+                try {
                     await vadRef.current.start();
+                } catch (e) {
+                    console.error("VAD Start Error:", e);
                 }
             } else {
-                // SOLO pausamos si NO hay audio sonando
-                if (!isAudioPlaying) {
-                    console.log("🔇 Mic Pausing...");
-                    vadRef.current.pause();
-                }
+                console.log("🔇 Mic Pausing...");
+                vadRef.current.pause();
             }
         };
         syncMic();
-    }, [isRecordingActive, isTutorActive, audioRef.current]); // Dependencies ensure this runs when recording toggles
+    }, [isRecordingActive, isTutorActive]); // Dependencies ensure this runs when recording toggles
 
     return null;
 };

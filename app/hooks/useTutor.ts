@@ -90,9 +90,6 @@ export const useTutor = (
                 };
 
                 await audio.play();
-                // Después de await audio.play();
-                audio.onplay = () => console.log("🔊 [AUDIO] El audio está sonando ahora mismo.");
-                audio.onpause = () => console.log("⏸️ [AUDIO] El audio se detuvo.");
             } catch (error) {
                 resolve();
             }
@@ -204,7 +201,6 @@ export const useTutor = (
         currentQuestionRef,
         initializationLockRef,
         vadRef,
-        audioRef, // <--- AÑADE ESTO AQUÍ
         isProcessingRef,
         isExitingRef
     };
