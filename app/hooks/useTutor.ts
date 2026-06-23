@@ -74,8 +74,17 @@ export const useTutor = (
 
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
+
+                // En handleGenerateSpeech, ANTES de crear el nuevo Audio
+                if (audioRef.current) {
+                    audioRef.current.pause();
+                    audioRef.current = null; // Destruye el anterior antes de crear el nuevo
+                }
+
                 const audio = new Audio(audioUrl);
                 audioRef.current = audio;
+
+
 
                 // Esperar a que el audio esté listo para sonar
                 audio.oncanplaythrough = async () => {
@@ -95,14 +104,21 @@ export const useTutor = (
                     console.log("✅ [DEBUG] Audio shouldListenAfter:", shouldListenAfter);
                     console.log("✅ [DEBUG] Audio isTutorActive:", isTutorActive);
                     console.log("✅ [DEBUG] Audio isExitingRef.current:", isExitingRef.current);
-                    console.log("✅ Audio terminado.");
-                    audioRef.current = null;
+                    console.log("✅ [DEBUG] Audio terminado o interrumpido.");
+
+                    // Limpieza crítica
+                    if (audioRef.current === audio) {
+                        audioRef.current = null;
+                    }
                     URL.revokeObjectURL(audioUrl);
 
-                    // Protección extra: solo activar si NO estamos en proceso de verificación
-                    if (shouldListenAfter && isTutorActive && !isProcessingRef.current) {
-                        console.log("🎤 Activando micrófono...");
+                    // MIRA AQUÍ: Solo activa si el audio NO fue bloqueado y si estamos en estado válido
+                    // Añade la condición '!audio.paused' para verificar si realmente sonó
+                    if (shouldListenAfter && isTutorActive && !isExitingRef.current && !audio.paused) {
+                        console.log("🎤 Activando micrófono tras reproducción exitosa.");
                         setIsRecordingActive(true);
+                    } else {
+                        console.warn("⚠️ Audio no se reprodujo o bloqueado, saltando activación de micro.");
                     }
                     resolve();
                 };
