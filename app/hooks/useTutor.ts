@@ -38,8 +38,6 @@ export const useTutor = (
     const isExitingRef = useRef(false);
     const initializationLockRef = useRef<string | null>(null);
 
-    const isAudioPlayingRef = useRef(false); // <--- AÑADE ESTO
-
     const handleGenerateSpeech = (text: string, shouldListenAfter: boolean = true) => {
         return new Promise<void>(async (resolve) => {
             if (!isTutorActive && !isExitingRef.current) return resolve();
@@ -75,10 +73,7 @@ export const useTutor = (
                 const audio = new Audio(audioUrl);
                 audioRef.current = audio;
 
-                isAudioPlayingRef.current = true; // <--- AUDIO EMPIEZA
-
                 audio.onended = () => {
-                    isAudioPlayingRef.current = false; // <--- AUDIO TERMINA
                     if (shouldListenAfter && isTutorActive && !isExitingRef.current) {
                         setIsRecordingActive(true);
                     }
@@ -207,7 +202,6 @@ export const useTutor = (
         initializationLockRef,
         vadRef,
         isProcessingRef,
-        isExitingRef,
-        isAudioPlayingRef
+        isExitingRef
     };
 };

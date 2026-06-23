@@ -48,14 +48,6 @@ const AgenticVoicePipeline = ({
     //onUpdateMetrics
 }: Props) => {
 
-    const [authReady, setAuthReady] = useState(false);
-
-    useEffect(() => {
-        supabase.auth.getSession().then(() => {
-            setAuthReady(true);
-        });
-    }, []);
-
     // --- 1. CALL THE HOOK HERE (Inside the component) ---
     const {
         // Renaming these locally so they don't clash with your props
@@ -67,8 +59,7 @@ const AgenticVoicePipeline = ({
         vadRef,
         // We can extract these to satisfy the "Cannot find name" errors
         isExitingRef,
-        isProcessingRef,
-        isAudioPlayingRef
+        isProcessingRef
     } = useTutor(numericLevelId/*, onUpdateMetrics*/, isTutorActive, setIsTutorActive, isRecordingActive, setIsRecordingActive, lessonHistory, setLessonHistory);
 
     const token = useAuthToken(); // Obtiene el token de la cookie de NextAuth
@@ -96,17 +87,17 @@ const AgenticVoicePipeline = ({
                 vadRef.current.pause();
             }
         }
-    }, [isTutorActive/*, numericLevelId , stopAudio*/]);
+    }, [isTutorActive, numericLevelId, stopAudio]);
 
 
     // This effect runs every time isTutorActive changes.
     // If it changes to false (like when you click Refresh), it runs stopAudio().
-    //useEffect(() => {
-    // If the tutor is turned off, we stop audio regardless of processing state
-    //if (!isTutorActive) {
-    //stopAudio();
-    //}
-    //}, [isTutorActive, stopAudio]);
+    useEffect(() => {
+        // If the tutor is turned off, we stop audio regardless of processing state
+        if (!isTutorActive) {
+            stopAudio();
+        }
+    }, [isTutorActive, stopAudio]);
 
     useEffect(() => {
         syncIndexRef.current = tutorSpeechCount;
@@ -140,17 +131,7 @@ const AgenticVoicePipeline = ({
         return intros[Math.floor(Math.random() * intros.length)] + " ";
     };
 
-    // Solo inicializa el tutor si authReady es true
-    if (!authReady) return <div>Cargando sesión...</div>;
-
     const triggerTutorFlow = useCallback(async (count: number, manualHistory?: string[]) => {
-
-        // 1. AÑADE ESTO: Si no hay token, no intentes nada.
-        if (!token) {
-            console.warn("⏳ Esperando token de autenticación...");
-            return;
-        }
-
         // 1. Check if processing or missing content
         if (isProcessingRef.current || !currentLevelContent) return;
         isProcessingRef.current = true;
@@ -191,10 +172,10 @@ const AgenticVoicePipeline = ({
             //const { data: { session } } = await supabase.auth.getSession();
             //const token = session?.access_token;
 
-            //if (!token) {
-            //console.error("No hay token disponible, abortando fetch.");
-            //return;
-            //}
+            if (!token) {
+                console.error("No hay token disponible, abortando fetch.");
+                return;
+            }
 
 
             const response = await fetch(`${API_BASE}/api/tutor/get-dynamic-question`, {
@@ -250,16 +231,8 @@ const AgenticVoicePipeline = ({
 
     }, [isTutorActive, currentLevelContent, triggerTutorFlow, numericLevelId, tutorSpeechCount]);
 
-    const vadCreatedRef = useRef(false); // <--- AÑADE ESTO
-
     // EFFECT A: Create the VAD instance once (and only once)
     useEffect(() => {
-
-        // Si ya existe O ya intentamos crearlo, NO lo hagas otra vez
-        if (vadRef.current || vadCreatedRef.current) return;
-
-        vadCreatedRef.current = true; // Marcamos antes de arrancar
-
         const createVAD = async () => {
             if (!vadRef.current) {
                 console.log("🛠️ Creating VAD Engine...");
@@ -286,13 +259,6 @@ const AgenticVoicePipeline = ({
         const syncMic = async () => {
             if (!vadRef.current) return;
 
-            // SEMÁFORO: Si el audio está sonando, el micrófono NO puede arrancar
-            if (isAudioPlayingRef.current) {
-                console.log("⏸️ Audio sonando, micrófono bloqueado por seguridad.");
-                vadRef.current.pause();
-                return;
-            }
-
             // Check the latest state values
             if (isTutorActive && isRecordingActive && !isExitingRef.current) {
                 console.log("🎤 Mic Starting...");
@@ -307,7 +273,7 @@ const AgenticVoicePipeline = ({
             }
         };
         syncMic();
-    }, [isRecordingActive, isTutorActive, isExitingRef]); // Dependencies ensure this runs when recording toggles
+    }, [isRecordingActive, isTutorActive]); // Dependencies ensure this runs when recording toggles
 
     return null;
 };
