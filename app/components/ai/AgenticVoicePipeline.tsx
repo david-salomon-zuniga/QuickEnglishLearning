@@ -166,19 +166,27 @@ const AgenticVoicePipeline = ({
         // Si la lógica de negocio requiere que el tutor esté activo, 
         // no salgas si esTutorActive es false, porque el cambio de estado 
         // es asíncrono. Confía en isProcessingRef.current únicamente.
-        if (isProcessingRef.current) return;
+        if (isProcessingRef.current) {
+            console.warn("⚠️ [PIPELINE] 3. Abortado: isProcessingRef es true");
+            return;
+        }
 
         // 1. Si ya se disparó una vez, salimos inmediatamente
-        if (hasTriggeredRef.current) return;
+        if (hasTriggeredRef.current) {
+            console.warn("⚠️ [PIPELINE] 4. Abortado: Ya se disparó previamente");
+            return;
+        }
 
         // 2. Marcamos como disparado ANTES de cualquier lógica
         hasTriggeredRef.current = true;
-
+        isProcessingRef.current = true;
+        console.log("🚦 [PIPELINE] 5. Bandera de disparo activada.");
         console.log("🚦 [PIPELINE] Disparando por única vez.");
 
         // Usamos el 'count' que llega por argumento, 
         // pero si es undefined, leemos del ref para mantener la estabilidad.
         const activeCount = count ?? tutorSpeechCountRef.current;
+        console.log("🚀 [PIPELINE] 6. Paso actual:", activeCount);
 
         console.log("🚀 Disparando flujo, paso actual:", activeCount);
 
@@ -214,6 +222,7 @@ const AgenticVoicePipeline = ({
 
 
         try {
+            console.log("📡 [PIPELINE] 7. Preparando payload para fetch...");
             // Get active Supabase token
             //const { data: { session } } = await supabase.auth.getSession();
             //const token = session?.access_token;
@@ -222,7 +231,7 @@ const AgenticVoicePipeline = ({
                 console.error("No hay token disponible, abortando fetch.");
                 return;
             }
-
+            console.log("📡 [PIPELINE] 8. Ejecutando fetch. ¿Tiene token?:", !!tokenRef.current);
 
             const response = await fetch(`${API_BASE}/api/tutor/get-dynamic-question`, {
                 method: 'POST',
@@ -234,7 +243,9 @@ const AgenticVoicePipeline = ({
             });
 
             // Verificar si la respuesta es realmente JSON
+            console.log("📡 [PIPELINE] 9. Respuesta recibida. Status:", response.status);
             const text = await response.text();
+            console.log("📡 [PIPELINE] 10. Cuerpo de respuesta:", text.substring(0, 100));
             let data;
             try {
                 data = JSON.parse(text);
@@ -257,14 +268,17 @@ const AgenticVoicePipeline = ({
             currentQuestionRef.current = reconstructedQuestion;
 
             // CRITICAL: Always set 'shouldListen' to TRUE here so the mic opens
+            console.log("🎙️ [PIPELINE] 11. Llamando a handleGenerateSpeech...");
+            // Aquí es donde el micro se debe abrir solo cuando termine de hablar
             await handleGenerateSpeech(reconstructedQuestion, true);
+            console.log("✅ [PIPELINE] 12. handleGenerateSpeech finalizado.");
 
         } catch (error) {
-            console.error("Backend Error:", error);
+            console.error("❌ [PIPELINE] 13. Error en el TRY/CATCH:", error);
             hasTriggeredRef.current = false; // Permite reintento si falló el inicio
         } finally {
-
             isProcessingRef.current = false;
+            console.log("🏁 [PIPELINE] 14. Proceso finalizado.");
         }
     }, []);
     //"Reconstruye esta función cada vez que uno de estos valores cambie".
@@ -337,9 +351,16 @@ const AgenticVoicePipeline = ({
             if (isTutorActive) {
                 // Si estamos grabando, iniciamos. 
                 // Si no estamos grabando, pausamos (pero no destruimos)
-                console.log("🎤 Mic Starting...");
-                await vadRef.current.start();
 
+                console.log(`🎤 [SYNC] Intentando mic. Tutor: ${isTutorActive}`);
+
+                if (isRecordingActive && !isExitingRef.current) {
+                    console.log("🎤 Mic Starting...");
+                    await vadRef.current.start();
+                } else {
+                    console.log(`🔇 Mic Pausing... (Razón: Tutor = ${isTutorActive}, Recording = ${isRecordingActive}, Exiting = ${isExitingRef.current})`);
+                    vadRef.current.pause();
+                }
             } else {
                 // Si el tutor está apagado, aseguramos pausa
                 vadRef.current.pause();
