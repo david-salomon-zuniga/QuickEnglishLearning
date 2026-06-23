@@ -59,7 +59,8 @@ const AgenticVoicePipeline = ({
         vadRef,
         // We can extract these to satisfy the "Cannot find name" errors
         isExitingRef,
-        isProcessingRef
+        isProcessingRef,
+        isAudioPlayingRef
     } = useTutor(numericLevelId/*, onUpdateMetrics*/, isTutorActive, setIsTutorActive, isRecordingActive, setIsRecordingActive, lessonHistory, setLessonHistory);
 
     const token = useAuthToken(); // Obtiene el token de la cookie de NextAuth
@@ -259,6 +260,13 @@ const AgenticVoicePipeline = ({
         const syncMic = async () => {
             if (!vadRef.current) return;
 
+            // SEMÁFORO: Si el audio está sonando, el micrófono NO puede arrancar
+            if (isAudioPlayingRef.current) {
+                console.log("⏸️ Audio sonando, micrófono bloqueado por seguridad.");
+                vadRef.current.pause();
+                return;
+            }
+
             // Check the latest state values
             if (isTutorActive && isRecordingActive && !isExitingRef.current) {
                 console.log("🎤 Mic Starting...");
@@ -273,7 +281,7 @@ const AgenticVoicePipeline = ({
             }
         };
         syncMic();
-    }, [isRecordingActive, isTutorActive]); // Dependencies ensure this runs when recording toggles
+    }, [isRecordingActive, isTutorActive, isAudioPlayingRef.current]); // Dependencies ensure this runs when recording toggles
 
     return null;
 };
