@@ -196,7 +196,9 @@ export const useTutor = (
             isProcessingRef.current = false;
             isExitingRef.current = false;
 
-            if (vadRef.current) {
+            // Solo pausar si NO es la última intervención de la IA
+            // Si la IA está hablando, NO debemos forzar el pause
+            if (vadRef.current && !isExitingRef.current) {
                 console.log("🔇 Pausando VAD tras verificación...");
                 vadRef.current.pause();
             }

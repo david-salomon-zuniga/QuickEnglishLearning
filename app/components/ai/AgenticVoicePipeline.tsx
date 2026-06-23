@@ -69,6 +69,8 @@ const AgenticVoicePipeline = ({
 
     const tokenRef = useRef(token);
 
+    const isVadReady = useRef(false); // <--- NUEVO: Flag de control
+
     // Sincroniza el ref solo cuando el token realmente cambia
     useEffect(() => {
         tokenRef.current = token;
@@ -240,8 +242,8 @@ const AgenticVoicePipeline = ({
 
     // 1. UPDATED INITIALIZATION EFFECT
     useEffect(() => {
-        // 1. Guardia de seguridad: Si no hay token, no intentes inicializar
-        if (!tokenRef.current) return;
+        // 1. Guardias: Token, motor listo, y condiciones de tutor
+        if (!tokenRef.current || !isVadReady.current) return;
 
         const currentKey = `${numericLevelId}-${tutorSpeechCount}`;
 
@@ -268,10 +270,6 @@ const AgenticVoicePipeline = ({
     }, [isTutorActive, currentLevelContent, numericLevelId, tutorSpeechCount, token]); // Añadido 'token' como dependencia
 
     // EFFECT A: Create the VAD instance once (and only once)
-    // Define esto fuera del componente, al nivel superior del archivo
-    //let globalVadInstance: any = null;
-
-    // ... dentro del componente AgenticVoicePipeline:
 
     useEffect(() => {
         const initVAD = async () => {
@@ -293,6 +291,8 @@ const AgenticVoicePipeline = ({
             }
             // Asignamos la instancia global a la referencia local para que el componente la use
             vadRef.current = globalVadInstance;
+            isVadReady.current = true; // <--- Marcamos como listo
+            console.log("✅ VAD Ready");
         };
 
         initVAD();
