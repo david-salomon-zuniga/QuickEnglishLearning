@@ -124,7 +124,12 @@ export const useTutor = (
     }, [setIsRecordingActive]);
 
     const handleVerifySpeech = useCallback(async (audioBuffer: Float32Array) => {
-        if (isProcessingRef.current) return;
+        console.log("🔍 [VERIFY] Iniciando verificación...");
+
+        if (isProcessingRef.current) {
+            console.warn("⚠️ [VERIFY] Abortado: isProcessingRef es true");
+            return;
+        }
         isProcessingRef.current = true;
 
         try {

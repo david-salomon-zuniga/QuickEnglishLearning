@@ -153,7 +153,7 @@ const AgenticVoicePipeline = ({
     };
 
     const triggerTutorFlow = useCallback(async (count?: number, manualHistory?: string[]) => {
-
+        console.log("🚦 [PIPELINE] Entrando a triggerTutorFlow. Procesando:", isProcessingRef.current, "Active:", isTutorActive);
         // 1. Check if processing or missing content
         if (isProcessingRef.current || !currentLevelContent) return;
         isProcessingRef.current = true;
@@ -319,7 +319,7 @@ const AgenticVoicePipeline = ({
     useEffect(() => {
         const syncMic = async () => {
             if (!vadRef.current) return;
-
+            console.log(`🎤 [SYNC] Intentando mic. Tutor: ${isTutorActive}, Recording: ${isRecordingActive}`);
             // Check the latest state values
             if (isTutorActive && isRecordingActive && !isExitingRef.current) {
                 console.log("🎤 Mic Starting...");
@@ -329,7 +329,7 @@ const AgenticVoicePipeline = ({
                     console.error("VAD Start Error:", e);
                 }
             } else {
-                console.log("🔇 Mic Pausing...");
+                console.log(`🔇 Mic Pausing... (Razón: Tutor=${isTutorActive}, Recording=${isRecordingActive}, Exiting=${isExitingRef.current})`);
                 vadRef.current.pause();
             }
         };
