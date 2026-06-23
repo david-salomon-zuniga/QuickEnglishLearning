@@ -40,7 +40,11 @@ export const useTutor = (
 
     const handleGenerateSpeech = (text: string, shouldListenAfter: boolean = true) => {
         return new Promise<void>(async (resolve) => {
-            if (!isTutorActive && !isExitingRef.current) return resolve();
+            // Por esto (que es más permisivo durante el flujo):
+            if (!isTutorActive && !isExitingRef.current) {
+                console.warn("⚠️ [DEBUG SYNTH] Bloqueado: isTutorActive es falso");
+                return resolve();
+            }
 
             // NUEVO LOG: Confirmar que el texto llegó a la función de síntesis
             console.log("🎙️ [DEBUG SYNTH] Iniciando síntesis con texto:", text ? text.substring(0, 50) + "..." : "VACÍO");

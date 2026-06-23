@@ -280,7 +280,7 @@ const AgenticVoicePipeline = ({
             isProcessingRef.current = false;
             console.log("🏁 [PIPELINE] 14. Proceso finalizado.");
         }
-    }, []);
+    }, [handleGenerateSpeech, numericLevelId, token]);
     //"Reconstruye esta función cada vez que uno de estos valores cambie".
 
 
