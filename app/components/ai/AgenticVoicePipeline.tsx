@@ -337,16 +337,9 @@ const AgenticVoicePipeline = ({
             if (isTutorActive) {
                 // Si estamos grabando, iniciamos. 
                 // Si no estamos grabando, pausamos (pero no destruimos)
+                console.log("🎤 Mic Starting...");
+                await vadRef.current.start();
 
-                console.log(`isRecordingActive: ${isRecordingActive}`);
-
-                if (isRecordingActive && !isExitingRef.current) {
-                    console.log("🎤 Mic Starting...");
-                    await vadRef.current.start();
-                } else {
-                    console.log(`🔇 Mic Pausing... (Razón: Tutor = ${isTutorActive}, Recording = ${isRecordingActive}, Exiting = ${isExitingRef.current})`);
-                    vadRef.current.pause();
-                }
             } else {
                 // Si el tutor está apagado, aseguramos pausa
                 vadRef.current.pause();
