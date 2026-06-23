@@ -79,12 +79,13 @@ export const useTutor = (
 
                 // Esperar a que el audio esté listo para sonar
                 audio.oncanplaythrough = async () => {
-                    console.log("🔊 [DEBUG] Audio listo para reproducir.");
+                    console.log("🔊 [DEBUG] Audio listo.");
                     try {
                         await audio.play();
                     } catch (err) {
-                        console.error("❌ [CRÍTICO] Autoplay bloqueado por el navegador:", err);
-                        // Si el autoplay falla, resolvemos para que no se quede bloqueado
+                        console.error("❌ Autoplay bloqueado:", err);
+                        // SI FALLA EL AUTOPLAY, NO CAMBIES A RECORDING, FUERZA SALIDA
+                        setIsRecordingActive(false);
                         resolve();
                     }
                 };
@@ -94,20 +95,15 @@ export const useTutor = (
                     console.log("✅ [DEBUG] Audio shouldListenAfter:", shouldListenAfter);
                     console.log("✅ [DEBUG] Audio isTutorActive:", isTutorActive);
                     console.log("✅ [DEBUG] Audio isExitingRef.current:", isExitingRef.current);
+                    console.log("✅ Audio terminado.");
                     audioRef.current = null;
                     URL.revokeObjectURL(audioUrl);
 
-                    // 2. REACTIVACIÓN PRECISA DEL VAD
-                    //if (vadRef.current) {
-                    //console.log("🎙️ IA terminó de hablar. Reactivando VAD...");
-                    //vadRef.current.start();
-                    //}
-
-                    if (shouldListenAfter && isTutorActive && !isExitingRef.current) {
-                        console.log("✅ IA terminó de hablar. Cambiando isRecordingActive a TRUE.");
+                    // Protección extra: solo activar si NO estamos en proceso de verificación
+                    if (shouldListenAfter && isTutorActive && !isProcessingRef.current) {
+                        console.log("🎤 Activando micrófono...");
                         setIsRecordingActive(true);
                     }
-                    isExitingRef.current = false; // Agrega esto
                     resolve();
                 };
 
