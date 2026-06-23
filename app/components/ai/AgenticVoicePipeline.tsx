@@ -215,8 +215,17 @@ const AgenticVoicePipeline = ({
                 body: JSON.stringify(payload)
             });
 
+            // Verificar si la respuesta es realmente JSON
+            const text = await response.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error("El servidor no devolvió JSON:", text);
+                return; // Aborta si no es JSON para no bloquear la app
+            }
 
-            const data = await response.json();
+            //const data = await response.json();
 
             // FIX: If the backend still sends "Excellent work", we ignore it and use a fallback 
             // to ensure Amy actually asks a question first.
@@ -251,14 +260,15 @@ const AgenticVoicePipeline = ({
         // and tutor isn't trying to load something (initializationLockRef.current i empty)
         // if we have the material of the class obviously (currentLevelContent)
         // the sistem isn't busy delivering and bringing data from the API (we aren't on the middle of another operation)
-        if (isTutorActive && !initializationLockRef.current && currentLevelContent && !isProcessingRef.current) {
-
-            // initializationLockRef.current = "1-0 (for example)"
-            initializationLockRef.current = currentKey;
-            console.log("🚀 Initializing Tutor:", currentKey);
-
-            // Call the main function that starts the whole process of the speech and API fetch
-            triggerTutorFlow(tutorSpeechCount);
+        if (isTutorActive && isVadReady.current && tokenRef.current && currentLevelContent) {
+            // Solo si no hay un bloqueo previo (para evitar el spam de inicializaciones)
+            if (!initializationLockRef.current && !isProcessingRef.current) {
+                // initializationLockRef.current = "1-0 (for example)"
+                initializationLockRef.current = currentKey;
+                console.log("🚀 Initializing Tutor:", currentKey);
+                // Call the main function that starts the whole process of the speech and API fetch
+                triggerTutorFlow(tutorSpeechCount);
+            }
         }
 
         // FIX: If the user turns the tutor OFF manually, clear the lock 
