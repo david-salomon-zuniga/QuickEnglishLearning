@@ -96,7 +96,7 @@ const AgenticVoicePipeline = ({
                 vadRef.current.pause();
             }
         }
-    }, [isTutorActive, numericLevelId /*, stopAudio*/]);
+    }, [isTutorActive/*, numericLevelId , stopAudio*/]);
 
 
     // This effect runs every time isTutorActive changes.
