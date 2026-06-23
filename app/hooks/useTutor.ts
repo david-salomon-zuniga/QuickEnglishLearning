@@ -73,7 +73,23 @@ export const useTutor = (
                 const audio = new Audio(audioUrl);
                 audioRef.current = audio;
 
+                // Esperar a que el audio esté listo para sonar
+                audio.oncanplaythrough = async () => {
+                    console.log("🔊 [DEBUG] Audio listo para reproducir.");
+                    try {
+                        await audio.play();
+                    } catch (err) {
+                        console.error("❌ [CRÍTICO] Autoplay bloqueado por el navegador:", err);
+                        // Si el autoplay falla, resolvemos para que no se quede bloqueado
+                        resolve();
+                    }
+                };
+
                 audio.onended = () => {
+                    console.log("✅ [DEBUG] Audio terminado.");
+                    console.log("✅ [DEBUG] Audio shouldListenAfter:", shouldListenAfter);
+                    console.log("✅ [DEBUG] Audio isTutorActive:", isTutorActive);
+                    console.log("✅ [DEBUG] Audio isExitingRef.current:", isExitingRef.current);
                     audioRef.current = null;
                     URL.revokeObjectURL(audioUrl);
 
@@ -98,8 +114,15 @@ export const useTutor = (
                     resolve();
                 };
 
-                await audio.play();
+                // 2. SEGURIDAD: Si el audio tarda, forzamos play tras un pequeño delay
+                setTimeout(() => {
+                    if (audio.paused) {
+                        console.log("⚠️ [DEBUG] Forzando play por timeout...");
+                        audio.play().catch(e => console.error("❌ Play fallido:", e));
+                    }
+                }, 1000);
             } catch (error) {
+                console.error("❌ [ERROR] Fallo en síntesis:", error);
                 resolve();
             }
         });
