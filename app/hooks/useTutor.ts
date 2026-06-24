@@ -175,7 +175,7 @@ export const useTutor = (
                 // 2. SEGURIDAD: Si el audio tarda, forzamos play tras un pequeño delay
                 setTimeout(() => {
                     if (audio.paused) {
-                        console.log("⚠️ [DEBUG] Forzando play por timeout...");
+                        console.log("⚠️ [DEBUG] Forzando play por timeout...", isUserInteracted);
                         // Ahora puedes usar el estado para permitir el play
                         if (isUserInteracted) {
                             audio.play().catch(e => console.warn("Autoplay bloqueado:", e));
