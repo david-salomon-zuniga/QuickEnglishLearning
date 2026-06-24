@@ -105,6 +105,10 @@ const AgenticVoicePipeline = ({
 
     // THE BRUTAL RESET CIRCUIT BREAKER
     useEffect(() => {
+        // AÑADE ESTA LÍNEA: Si la IA está hablando o procesando, no apagues nada
+        if (isProcessingRef.current) return;
+
+
         if (!isTutorActive) {
             stopAudio(true);
             isProcessingRef.current = false;
@@ -347,6 +351,30 @@ const AgenticVoicePipeline = ({
             }
         };
     }, []);
+
+    /*    useEffect(() => {
+        const createVAD = async () => {
+            if (!vadRef.current) {
+                console.log("🛠️ Creating VAD Engine...");
+                vadRef.current = await MicVAD.new({
+                    startOnLoad: false,
+                    model: "v5",
+                    baseAssetPath: "/",
+                    onnxWASMBasePath: "/",
+                    // 1.Cuando el VAD detecta el final de tu voz, dispara handleVerifySpeech
+                    onSpeechEnd: async (audio) => {
+                        // Logic to stop UI during processing
+                        if (vadRef.current) vadRef.current.pause();
+                        setIsRecordingActive(false);
+                        await handleVerifySpeech(audio);
+                    },
+                });
+            }
+        };
+        createVAD();
+    }, []); */
+
+
 
     // EFFECT B: The "Power Switch" (Reacts immediately to state changes)
     useEffect(() => {
