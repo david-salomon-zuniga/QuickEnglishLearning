@@ -32,7 +32,8 @@ interface Props {
     numericLevelId: number;
 }
 
-
+// 1. Move the instance variable outside the component scope
+let globalVadInstance: any = null;
 
 const AgenticVoicePipeline = ({
     isTutorActive,
@@ -314,25 +315,37 @@ const AgenticVoicePipeline = ({
     // EFFECT A: Create the VAD instance once (and only once)
 
     useEffect(() => {
-        const createVAD = async () => {
-            if (!vadRef.current) {
+        const initVAD = async () => {
+            // Solo creamos si no existe globalmente
+            if (!globalVadInstance) {
                 console.log("🛠️ Creating VAD Engine...");
-                vadRef.current = await MicVAD.new({
+                globalVadInstance = await MicVAD.new({
                     startOnLoad: false,
                     model: "v5",
                     baseAssetPath: "/",
                     onnxWASMBasePath: "/",
-                    // 1.Cuando el VAD detecta el final de tu voz, dispara handleVerifySpeech
                     onSpeechEnd: async (audio) => {
-                        // Logic to stop UI during processing
                         if (vadRef.current) vadRef.current.pause();
                         setIsRecordingActive(false);
-                        await handleVerifySpeech(audio);
+                        // Usamos .current para garantizar que vemos los estados más frescos
+                        await handleVerifySpeechRef.current(audio);
                     },
                 });
             }
+            // Asignamos la instancia global a la referencia local para que el componente la use
+            vadRef.current = globalVadInstance;
+            isVadReady.current = true; // <--- Marcamos como listo
+            console.log("✅ VAD Ready");
         };
-        createVAD();
+
+        initVAD();
+
+        // Limpieza: solo pausamos, nunca destruimos la instancia global
+        return () => {
+            if (vadRef.current) {
+                vadRef.current.pause();
+            }
+        };
     }, []);
 
     // EFFECT B: The "Power Switch" (Reacts immediately to state changes)
