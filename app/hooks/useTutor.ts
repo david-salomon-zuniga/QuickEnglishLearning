@@ -41,6 +41,11 @@ export const useTutor = (
 
     const handleGenerateSpeech = (text: string, shouldListenAfter: boolean = true) => {
         return new Promise<void>(async (resolve) => {
+
+            // 1. Pausar VAD de forma contundente ANTES de generar audio
+            if (vadRef.current) vadRef.current.pause();
+
+
             // Por esto (que es más permisivo durante el flujo):
             if (!isTutorActive && !isExitingRef.current) {
                 console.warn("⚠️ [DEBUG SYNTH] Bloqueado: isTutorActive es falso");
@@ -85,7 +90,9 @@ export const useTutor = (
                 const audio = new Audio(audioUrl);
                 audioRef.current = audio;
 
-
+                audio.onplay = () => {
+                    setIsRecordingActive(false); // Asegura que el VAD no intente arrancar
+                };
 
                 // Esperar a que el audio esté listo para sonar
                 audio.oncanplaythrough = async () => {
