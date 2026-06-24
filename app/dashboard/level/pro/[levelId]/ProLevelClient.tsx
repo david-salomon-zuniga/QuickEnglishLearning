@@ -14,6 +14,7 @@ import { ListenSpeakPractice } from "@/app/components/practice/ListenSpeakPracti
 import { ListeningComprehensionPractice } from "@/app/components/practice/ListeningComprehensionPractice";
 import { VideoPractice } from "@/app/components/practice/VideoPractice";
 import { TextPractice } from "@/app/components/practice/TextPractice";
+import { useTutor } from "@/app/hooks/useTutor";
 
 // Fuera del componente, en ProLevelClient.tsx
 // Declaramos un flag global que sobrevive a todo
@@ -49,6 +50,18 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     const MAX_SPEECHES = 4;
 
 
+    const {
+        // Renaming these locally so they don't clash with your props
+        stopAudio,
+        handleVerifySpeech,
+        handleGenerateSpeech,
+        currentQuestionRef,
+        initializationLockRef,
+        vadRef,
+        // We can extract these to satisfy the "Cannot find name" errors
+        isExitingRef,
+        isProcessingRef
+    } = useTutor(numericLevelId/*, onUpdateMetrics*/, isTutorActive, setIsTutorActive, isRecordingActive, setIsRecordingActive, lessonHistory, setLessonHistory);
 
 
     const handleStartTutor = () => {
@@ -439,6 +452,10 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
 
                                     <button
                                         onClick={() => {
+                                            // 1. Detener audio activo y liberar recursos (indispensable)
+                                            stopAudio(true);
+                                            // 2. Resetear el flag global
+                                            (window as any).isUserAuthorizedForAudio = false;
                                             setIsTutorActive(false);
                                             setIsRecordingActive(false);
                                             setTutorSpeechCount(subStep);
