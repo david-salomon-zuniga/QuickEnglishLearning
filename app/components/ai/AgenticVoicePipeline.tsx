@@ -17,6 +17,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 
 interface Props {
+    isManuallyStoppedRef: { current: boolean };
     isTutorActive: boolean;
     isRecordingActive: boolean;
     setIsTutorActive: (active: boolean) => void;
@@ -35,6 +36,7 @@ interface Props {
 let globalVadInstance: any = null;
 
 const AgenticVoicePipeline = ({
+    isManuallyStoppedRef,
     isTutorActive,
     isRecordingActive,
     setIsTutorActive,
@@ -294,6 +296,11 @@ const AgenticVoicePipeline = ({
 
     // 1. UPDATED INITIALIZATION EFFECT
     useEffect(() => {
+        // Si el usuario presionó reset en el padre, prohibido disparar
+        if (isManuallyStoppedRef.current) {
+            console.warn("🚫 [PIPELINE] Bloqueado por reset manual.");
+            return;
+        }
         // 1. Guardias: Token, motor listo
         if (!tokenRef.current || !isVadReady.current) return;
 
@@ -312,7 +319,7 @@ const AgenticVoicePipeline = ({
             triggerTutorFlow(isTutorActive, tutorSpeechCount);
             //}
         }
-    }, [isTutorActive/*, tutorSpeechCount*/]); // Añadido 'token' como dependencia
+    }, [isTutorActive, isManuallyStoppedRef]); // Añadido 'token' como dependencia
 
     // EFFECT A: Create the VAD instance once (and only once)
 
