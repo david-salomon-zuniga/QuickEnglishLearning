@@ -98,7 +98,7 @@ const AgenticVoicePipeline = ({
                     setIsRecordingActive(false);
                     // Opcional: disparar una lógica de "sin respuesta"
                 }
-            }, 20000);
+            }, 10000);
         }
 
         return () => clearTimeout(timeoutId);
