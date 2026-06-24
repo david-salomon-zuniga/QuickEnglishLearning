@@ -132,7 +132,7 @@ export const useTutor = (
 
                     try {
                         // Ahora puedes usar el estado para permitir el play
-                        if (isAuthorized && isTutorActive) {
+                        if (isAuthorized && !isTutorActive) {
                             audio.play().catch(e => console.warn("Autoplay bloqueado:", e));
                         }
                     } catch (err) {
@@ -148,7 +148,7 @@ export const useTutor = (
                     console.log("✅ [DEBUG] Audio shouldListenAfter:", shouldListenAfter);
                     console.log("✅ [DEBUG] Audio isTutorActive:", isTutorActive);
                     console.log("✅ [DEBUG] Audio isExitingRef.current:", isExitingRef.current);
-                    console.log("✅ [DEBUG] Audio terminado o interrumpido.");
+                    console.log("✅ [DEBUG] Audio terminado o interrumpido.", audioRef.current !== audio);
                     // 1. Verificación estricta: ¿Fue este el último audio generado?
                     if (audioRef.current !== audio) return;
 
