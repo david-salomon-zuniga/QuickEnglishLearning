@@ -40,13 +40,33 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     const MAX_SPEECHES = 4;
 
     const handleStartTutor = () => {
-        // Este es un archivo de audio de 1 seg que enganna al navegador para que active el func del mic
+        console.log("🔍 [FLOW 1] Clic detectado en botón de voz.");
+
+        // El audio debe ser lo primero
         const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
-        silentAudio.play().then(() => {
-            setIsUserInteracted(true);
-            setIsTutorActive(true);
-        });
+
+        silentAudio.play()
+            .then(() => {
+                console.log("🔍 [FLOW 2] Audio silencioso reproducido con éxito. Autorización obtenida.");
+                setIsUserInteracted(true);
+                setIsTutorActive(true);
+
+                // Forzar una pequeña pausa antes de activar el pipeline
+                setTimeout(() => {
+                    console.log("🔍 [FLOW 3] Activando pipeline...");
+                }, 100);
+            })
+            .catch(err => {
+                console.error("🔍 [ERROR] Fallo al activar audio:", err);
+            });
     };
+
+    useEffect(() => {
+        console.log("🔍 [STATE_SYNC] isTutorActive cambió a:", isTutorActive);
+        if (isTutorActive) {
+            console.log("🔍 [STATE_SYNC] Intentando conectar con AgenticVoicePipeline...");
+        }
+    }, [isTutorActive]);
 
     const getFontSize = (text: string) => {
         if (numericLevelId === 42 || numericLevelId === 43) {
