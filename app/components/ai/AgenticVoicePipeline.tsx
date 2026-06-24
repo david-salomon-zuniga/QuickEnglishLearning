@@ -174,11 +174,6 @@ const AgenticVoicePipeline = ({
         // Si la lógica de negocio requiere que el tutor esté activo, 
         // no salgas si esTutorActive es false, porque el cambio de estado 
         // es asíncrono. Confía en isProcessingRef.current únicamente.
-        if (isProcessingRef.current) {
-            console.warn("⚠️ [PIPELINE] 3. Abortado: isProcessingRef es true");
-            return;
-        }
-
 
         // 2. Marcamos como disparado ANTES de cualquier lógica
         hasTriggeredRef.current = true;

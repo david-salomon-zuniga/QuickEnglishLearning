@@ -132,7 +132,7 @@ export const useTutor = (
 
                     try {
                         // Ahora puedes usar el estado para permitir el play
-                        if (isAuthorized && !isTutorActive) {
+                        if (isAuthorized && isTutorActive) {
                             audio.play().catch(e => console.warn("Autoplay bloqueado:", e));
                         }
                     } catch (err) {
