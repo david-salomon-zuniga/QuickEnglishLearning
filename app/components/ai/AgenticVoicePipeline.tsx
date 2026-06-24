@@ -303,7 +303,7 @@ const AgenticVoicePipeline = ({
         // Si el log dice "Active: false", es porque este efecto corre antes 
         // de que el padre termine de actualizar el estado.
         // Solo disparamos si está activo y NO se ha disparado nunca antes
-        if (isTutorActive && !hasTriggeredRef.current) {
+        if (isTutorActive) {
             console.log("🚀 Primer disparo detectado...");
             //if (!initializationLockRef.current && !isProcessingRef.current) {
             const currentKey = `${numericLevelId}-${tutorSpeechCount}`;
