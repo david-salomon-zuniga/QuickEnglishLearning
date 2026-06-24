@@ -187,7 +187,7 @@ export const useTutor = (
                 };
 
                 audio.onerror = (e) => {
-                    console.error("🔴 [ERROR] Error de Audio:", e); // <--- ESTO te dirá si el archivo es inválido
+                    //console.error("🔴 [ERROR] Error de Audio:", e); // <--- ESTO te dirá si el archivo es inválido
                     audioRef.current = null;
                     URL.revokeObjectURL(audioUrl);
                     resolve();
