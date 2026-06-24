@@ -31,12 +31,22 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     const [currentLevelContent, setCurrentLevelContent] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [tutorSpeechCount, setTutorSpeechCount] = useState(0);
+    const [isUserInteracted, setIsUserInteracted] = useState(false);
 
     const isVocabLevel = numericLevelId >= 4;
     const initialStep = parseInt(searchParams.get("step") || "0", 10);
     const initialSubstep = parseInt(searchParams.get("substep") || "0", 10);
 
     const MAX_SPEECHES = 4;
+
+    const handleStartTutor = () => {
+        // Este es un archivo de audio de 1 seg que enganna al navegador para que active el func del mic
+        const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+        silentAudio.play().then(() => {
+            setIsUserInteracted(true);
+            setIsTutorActive(true);
+        });
+    };
 
     const getFontSize = (text: string) => {
         if (numericLevelId === 42 || numericLevelId === 43) {
@@ -134,6 +144,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
         initialStep,
         initialSubstep
     });
+
 
     useEffect(() => {
         setShuffledOrder(shuffleArray(Object.values(PracticeType)));
@@ -265,6 +276,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center bg-gray-50 p-2 md:p-4 font-sans overflow-hidden">
             <AgenticVoicePipeline
+                isUserInteracted={isUserInteracted}
                 tutorSpeechCount={tutorSpeechCount}
                 MAX_SPEECHES={MAX_SPEECHES}
                 setTutorSpeechCount={setTutorSpeechCount}
@@ -383,7 +395,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
                                     ) : (
                                         <button
                                             disabled={isTutorActive}
-                                            onClick={() => setIsTutorActive(true)}
+                                            onClick={handleStartTutor}
                                             className={`cursor-pointer p-3 md:p-5 rounded-full shadow-lg transition-all border border-gray-100 ${isTutorActive ? "bg-amber-400 opacity-50 cursor-not-allowed" : "bg-white hover:shadow-2xl active:scale-95"}`}
                                         >
                                             <span className={`text-2xl ${isTutorActive ? "animate-pulse" : ""}`}>

@@ -20,7 +20,8 @@ export const useTutor = (
     isRecordingActive: boolean,
     setIsRecordingActive: (active: boolean) => void,
     lessonHistory: string[],
-    setLessonHistory: Dispatch<SetStateAction<string[]>>
+    setLessonHistory: Dispatch<SetStateAction<string[]>>,
+    isUserInteracted: boolean // <--- Recibido aquí
 ) => {
 
 
@@ -90,7 +91,10 @@ export const useTutor = (
                 audio.oncanplaythrough = async () => {
                     console.log("🔊 [DEBUG] Audio listo.");
                     try {
-                        await audio.play();
+                        // Ahora puedes usar el estado para permitir el play
+                        if (isUserInteracted) {
+                            audio.play().catch(e => console.warn("Autoplay bloqueado:", e));
+                        }
                     } catch (err) {
                         console.error("❌ Autoplay bloqueado:", err);
                         // SI FALLA EL AUTOPLAY, NO CAMBIES A RECORDING, FUERZA SALIDA
@@ -136,7 +140,10 @@ export const useTutor = (
                 setTimeout(() => {
                     if (audio.paused) {
                         console.log("⚠️ [DEBUG] Forzando play por timeout...");
-                        audio.play().catch(e => console.error("❌ Play fallido:", e));
+                        // Ahora puedes usar el estado para permitir el play
+                        if (isUserInteracted) {
+                            audio.play().catch(e => console.warn("Autoplay bloqueado:", e));
+                        }
                     }
                 }, 1000);
             } catch (error) {

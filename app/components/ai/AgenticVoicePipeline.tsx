@@ -21,6 +21,7 @@ interface Props {
     isRecordingActive: boolean;
     setIsTutorActive: (active: boolean) => void;
     setIsRecordingActive: (active: boolean) => void;
+    isUserInteracted: boolean; // <--- AGREGADO
     tutorSpeechCount: number;
     MAX_SPEECHES: number;
     setTutorSpeechCount: React.Dispatch<React.SetStateAction<number>>;
@@ -29,7 +30,6 @@ interface Props {
     lessonHistory: string[];
     setLessonHistory: React.Dispatch<React.SetStateAction<string[]>>;
     numericLevelId: number;
-    //onUpdateMetrics: (metrics: TutorMetrics) => void;
 }
 
 // 1. Move the instance variable outside the component scope
@@ -40,6 +40,7 @@ const AgenticVoicePipeline = ({
     isRecordingActive,
     setIsTutorActive,
     setIsRecordingActive,
+    isUserInteracted, // <--- AGREGADO
     tutorSpeechCount,
     MAX_SPEECHES,
     setTutorSpeechCount,
@@ -63,7 +64,7 @@ const AgenticVoicePipeline = ({
         // We can extract these to satisfy the "Cannot find name" errors
         isExitingRef,
         isProcessingRef
-    } = useTutor(numericLevelId/*, onUpdateMetrics*/, isTutorActive, setIsTutorActive, isRecordingActive, setIsRecordingActive, lessonHistory, setLessonHistory);
+    } = useTutor(numericLevelId/*, onUpdateMetrics*/, isTutorActive, setIsTutorActive, isRecordingActive, setIsRecordingActive, lessonHistory, setLessonHistory, isUserInteracted);
 
     const token = useAuthToken(); // Obtiene el token de la cookie de NextAuth
 
@@ -154,7 +155,6 @@ const AgenticVoicePipeline = ({
         ];
         return intros[Math.floor(Math.random() * intros.length)] + " ";
     };
-
 
     // Define esto dentro del componente (fuera de cualquier efecto)
     const hasTriggeredRef = useRef(false);
