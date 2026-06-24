@@ -90,8 +90,9 @@ export const useTutor = (
                 }
 
                 const audioBlob = await response.blob();
+                console.log("audioBlob: ", audioBlob);
                 const audioUrl = URL.createObjectURL(audioBlob);
-
+                console.log("audioUrl: ", audioUrl);
                 // En handleGenerateSpeech, ANTES de crear el nuevo Audio
                 if (audioRef.current) {
                     audioRef.current.pause();
