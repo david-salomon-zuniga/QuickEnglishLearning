@@ -32,9 +32,6 @@ interface Props {
     numericLevelId: number;
 }
 
-// 1. Move the instance variable outside the component scope
-let globalVadInstance: any = null;
-
 const AgenticVoicePipeline = ({
     isTutorActive,
     isRecordingActive,
@@ -51,7 +48,6 @@ const AgenticVoicePipeline = ({
     numericLevelId,
     //onUpdateMetrics
 }: Props) => {
-
     // --- 1. CALL THE HOOK HERE (Inside the component) ---
     const {
         // Renaming these locally so they don't clash with your props
@@ -65,24 +61,84 @@ const AgenticVoicePipeline = ({
         isExitingRef,
         isProcessingRef
     } = useTutor(numericLevelId/*, onUpdateMetrics*/, isTutorActive, setIsTutorActive, isRecordingActive, setIsRecordingActive, lessonHistory, setLessonHistory, isUserInteracted);
-
     const token = useAuthToken(); // Obtiene el token de la cookie de NextAuth
-
     const tokenRef = useRef(token);
-
     const isVadReady = useRef(false); // <--- NUEVO: Flag de control
+    // --- 2. RESTORE SYNCINDEXREF ---
+    // Since this isn't in the hook yet, we keep it local to fix the error
+    const tutorSpeechCountRef = useRef(tutorSpeechCount);
+    // 1. En AgenticVoicePipeline.tsx, crea un ref para la función
+    const handleVerifySpeechRef = useRef(handleVerifySpeech);
+    const vadInstanceRef = useRef<any>(null);
+    const currentLevelContent: LevelContent = {
+        level: numericLevelId,
+        content: [],
+        title: "",
+        description: ""
+    };
+    const getGreetIntro = () => {
+        const intros = [
+            "Hi! What’s good?", "What’s the story?", "What’s the deal?", "What’s crackin'?", "What’s the haps?", "What’s new?",
+            "Yo! Hi.", "Ayo!", "Heyo!", "Alright?", "How’s it?",
+            "How’s it going?", "How’s things?", "How ya doing?", "How ya been?",
+            "Yo, bro.", "What’s up, man?",
+            "Greetings, homie.", "Yo, G.", "My man!", "Cheers.", "Ey.", "How you living?", "How’s life treating you?", "You good?", "Everything straight?", "Is you good?",
+            "How’s the grind?", "How’s the hustle?", "Keeping busy?", "Still out here?", "Staying out of trouble?",
+            "Wassup?", "Whaddup?",
+            "Whazzup?", "Ahoy!", "What’s the craic?",
+            "Look who it is!", "Hey! Hi! If it isn’t my favorite person!", "Long time no see.",
+            "What’s the sitch?", "How goes it?", "What’s the vibe check?",
+            "You been keeping out of trouble?", "What’s been keeping you busy?", "How’s the family?", "How’s the squad?", "Everything gravy?", "Everything wavy?",
+            "Yellow!", "Greetings and salutations.", "Peace and love.", "Stay safe out there.", "Catch you on the flip side."
+        ];
+        return intros[Math.floor(Math.random() * intros.length)] + " ";
+    };
+
+    // Define esto dentro del componente (fuera de cualquier efecto)
+    const hasTriggeredRef = useRef(false);
+
+
+    // EFFECT A: Create the VAD instance once (and only once)
+    useEffect(() => {
+        const initVAD = async () => {
+            // Si ya existe la instancia en este ref, no la crees de nuevo
+            if (vadInstanceRef.current) return;
+
+            console.log("🛠️ Creating local VAD Instance...");
+            const vad = await MicVAD.new({
+                startOnLoad: false,
+                model: "v5",
+                // ... (tus configuraciones)
+                onSpeechEnd: async (audio) => {
+                    if (vadInstanceRef.current) vadInstanceRef.current.pause();
+                    setIsRecordingActive(false);
+                    await handleVerifySpeechRef.current(audio);
+                },
+            });
+
+            vadInstanceRef.current = vad;
+            vadRef.current = vad; // <--- AGREGA ESTO: Sincroniza con el hook
+            isVadReady.current = true;
+            console.log("✅ VAD Ready");
+        };
+
+        initVAD();
+
+        // Limpieza al desmontar el componente
+        return () => {
+            if (vadInstanceRef.current) {
+                vadInstanceRef.current.destroy(); // Destruye el objeto para liberar memoria
+                vadInstanceRef.current = null;
+            }
+        };
+    }, []); // Solo corre al montar
+
 
     // Sincroniza el ref solo cuando el token realmente cambia
     useEffect(() => {
         tokenRef.current = token;
     }, [token]);
 
-    // --- 2. RESTORE SYNCINDEXREF ---
-    // Since this isn't in the hook yet, we keep it local to fix the error
-    const tutorSpeechCountRef = useRef(tutorSpeechCount);
-
-    // 1. En AgenticVoicePipeline.tsx, crea un ref para la función
-    const handleVerifySpeechRef = useRef(handleVerifySpeech);
 
     // 2. Actualiza ese ref cada vez que el hook cambie
     useEffect(() => {
@@ -90,12 +146,12 @@ const AgenticVoicePipeline = ({
     }, [handleVerifySpeech]);
 
 
-    const currentLevelContent: LevelContent = {
-        level: numericLevelId,
-        content: [],
-        title: "",
-        description: ""
-    };
+    // Agrega esto en AgenticVoicePipeline.tsx
+    useEffect(() => {
+        hasTriggeredRef.current = false;
+        console.log("🔄 [PIPELINE] Nivel cambiado, disparador reseteado.");
+    }, [numericLevelId]);
+
 
     // THE BRUTAL RESET CIRCUIT BREAKER
     useEffect(() => {
@@ -127,37 +183,6 @@ const AgenticVoicePipeline = ({
     useEffect(() => {
         tutorSpeechCountRef.current = tutorSpeechCount;
     }, [tutorSpeechCount]);
-
-    // Add this to clear history AND locks when the level OR page index changes
-    // Keep your existing history/lock cleaner but make it even more aggressive
-    /*useEffect(() => {
-        setLessonHistory([]);
-        setUserMistakes([]);
-        initializationLockRef.current = null;
-        isExitingRef.current = false;
-        isProcessingRef.current = false;
-    }, [numericLevelId]); */// Removed tutorSpeechCount from here to prevent loops, let the circuit breaker handle the rest
-
-    const getGreetIntro = () => {
-        const intros = [
-            "Hi! What’s good?", "What’s the story?", "What’s the deal?", "What’s crackin'?", "What’s the haps?", "What’s new?",
-            "Yo! Hi.", "Ayo!", "Heyo!", "Alright?", "How’s it?",
-            "How’s it going?", "How’s things?", "How ya doing?", "How ya been?",
-            "Yo, bro.", "What’s up, man?",
-            "Greetings, homie.", "Yo, G.", "My man!", "Cheers.", "Ey.", "How you living?", "How’s life treating you?", "You good?", "Everything straight?", "Is you good?",
-            "How’s the grind?", "How’s the hustle?", "Keeping busy?", "Still out here?", "Staying out of trouble?",
-            "Wassup?", "Whaddup?",
-            "Whazzup?", "Ahoy!", "What’s the craic?",
-            "Look who it is!", "Hey! Hi! If it isn’t my favorite person!", "Long time no see.",
-            "What’s the sitch?", "How goes it?", "What’s the vibe check?",
-            "You been keeping out of trouble?", "What’s been keeping you busy?", "How’s the family?", "How’s the squad?", "Everything gravy?", "Everything wavy?",
-            "Yellow!", "Greetings and salutations.", "Peace and love.", "Stay safe out there.", "Catch you on the flip side."
-        ];
-        return intros[Math.floor(Math.random() * intros.length)] + " ";
-    };
-
-    // Define esto dentro del componente (fuera de cualquier efecto)
-    const hasTriggeredRef = useRef(false);
 
     const triggerTutorFlow = useCallback(async (isActive: boolean, count?: number, manualHistory?: string[]) => {
         // 2. Usamos el argumento 'isActive' que sabemos que es el real en este instante
@@ -289,11 +314,8 @@ const AgenticVoicePipeline = ({
         // 1. Guardias: Token, motor listo
         if (!tokenRef.current || !isVadReady.current) return;
 
-        // 2. Solo disparamos si isTutorActive es true. 
-        // Si el log dice "Active: false", es porque este efecto corre antes 
-        // de que el padre termine de actualizar el estado.
-        // Solo disparamos si está activo y NO se ha disparado nunca antes
-        if (isTutorActive && !hasTriggeredRef.current) {
+        // Si el tutor se activa y NO se ha disparado nunca, lanzamos el flujo
+        if (isTutorActive && !hasTriggeredRef.current && isVadReady.current) {
             console.log("🚀 Primer disparo detectado...");
             //if (!initializationLockRef.current && !isProcessingRef.current) {
             const currentKey = `${numericLevelId}-${tutorSpeechCount}`;
@@ -301,46 +323,11 @@ const AgenticVoicePipeline = ({
             console.log("🚀 Initializing Tutor:", currentKey);
             // PASA isTutorActive explícitamente:
             console.log("🚀 isTutorActive:", isTutorActive);
+            hasTriggeredRef.current = true; // Marcamos como disparado
             triggerTutorFlow(isTutorActive, tutorSpeechCount);
             //}
         }
     }, [isTutorActive/*, tutorSpeechCount*/]); // Añadido 'token' como dependencia
-
-    // EFFECT A: Create the VAD instance once (and only once)
-
-    useEffect(() => {
-        const initVAD = async () => {
-            // Solo creamos si no existe globalmente
-            if (!globalVadInstance) {
-                console.log("🛠️ Creating VAD Engine...");
-                globalVadInstance = await MicVAD.new({
-                    startOnLoad: false,
-                    model: "v5",
-                    baseAssetPath: "/",
-                    onnxWASMBasePath: "/",
-                    onSpeechEnd: async (audio) => {
-                        if (vadRef.current) vadRef.current.pause();
-                        setIsRecordingActive(false);
-                        // Usamos .current para garantizar que vemos los estados más frescos
-                        await handleVerifySpeechRef.current(audio);
-                    },
-                });
-            }
-            // Asignamos la instancia global a la referencia local para que el componente la use
-            vadRef.current = globalVadInstance;
-            isVadReady.current = true; // <--- Marcamos como listo
-            console.log("✅ VAD Ready");
-        };
-
-        initVAD();
-
-        // Limpieza: solo pausamos, nunca destruimos la instancia global
-        return () => {
-            if (vadRef.current) {
-                vadRef.current.pause();
-            }
-        };
-    }, []);
 
     // EFFECT B: The "Power Switch" (Reacts immediately to state changes)
     useEffect(() => {
