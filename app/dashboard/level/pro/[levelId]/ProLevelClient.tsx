@@ -39,8 +39,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     const [currentLevelContent, setCurrentLevelContent] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [tutorSpeechCount, setTutorSpeechCount] = useState(0);
-    // 1. Crea el ref en el padre
-    const isManuallyStoppedRef = useRef(false);
+
 
 
 
@@ -324,7 +323,6 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center bg-gray-50 p-2 md:p-4 font-sans overflow-hidden">
             <AgenticVoicePipeline
-                isManuallyStoppedRef={isManuallyStoppedRef}
                 tutorSpeechCount={tutorSpeechCount}
                 MAX_SPEECHES={MAX_SPEECHES}
                 setTutorSpeechCount={setTutorSpeechCount}
@@ -454,7 +452,6 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
 
                                     <button
                                         onClick={() => {
-                                            isManuallyStoppedRef.current = true; // Bloqueo activo
                                             // 1. Detener audio activo y liberar recursos (indispensable)
                                             stopAudio(true);
                                             // 2. Detiene la voz de la Web Speech API (speak())
