@@ -60,12 +60,18 @@ export const useTutor = (
                 return resolve();
             }
 
+            // GUARD: Check if still active after session fetch
+            if (!isTutorActive) return resolve();
+
             try {
 
                 // Get active Supabase token
                 // Usamos el token que viene de la sesión de NextAuth (ya sincronizado)
                 const { data } = await supabase.auth.getSession();
                 const token = data.session?.access_token;
+
+                // GUARD: Check if still active after session fetch
+                if (!isTutorActive) return resolve();
 
                 const response = await fetch(`${API_BASE}/api/call-tutor-pipeline`, {
                     method: 'POST',
@@ -95,6 +101,9 @@ export const useTutor = (
 
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
+
+                // GUARD: Check if still active after session fetch
+                if (!isTutorActive) return resolve();
 
                 // ESTO ES LO QUE NECESITAS VER
                 console.log("DEBUG: Tipo de archivo recibido:", audioBlob.type);
@@ -128,7 +137,11 @@ export const useTutor = (
                 // Esperar a que el audio esté listo para sonar
                 audio.oncanplaythrough = async () => {
                     console.log("🔊 [DEBUG] Audio listo.");
-
+                    // GUARD: Final check before hitting play
+                    if (!isTutorActive) {
+                        URL.revokeObjectURL(audioUrl);
+                        return resolve();
+                    }
 
                     try {
                         // Ahora puedes usar el estado para permitir el play
@@ -270,7 +283,7 @@ export const useTutor = (
 
             setLessonHistory(prev => [...prev, `Amy: ${currentQuestionRef.current}`, `Analisis: ${cleanAnalysis}`]);
 
-            if (result.analysis) {
+            if (result.analysis && isTutorActive) {
                 console.log("🗣️ [DEBUG VERIFY] Preparando voz para análisis:", result.analysis);
                 isExitingRef.current = true;
                 await handleGenerateSpeech(result.analysis, false);
@@ -294,6 +307,11 @@ export const useTutor = (
         } finally {
             // Esto garantiza que el bloqueo se libere aunque haya errores,
             // pero NO pausa el VAD agresivamente aquí.
+            // Only force stop if we weren't just manually stopped
+            if (isTutorActive) {
+                setIsRecordingActive(false);
+                setIsTutorActive(false);
+            }
             isProcessingRef.current = false;
             isExitingRef.current = false;
         }
