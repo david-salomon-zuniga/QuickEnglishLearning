@@ -179,11 +179,6 @@ const AgenticVoicePipeline = ({
             return;
         }
 
-        // 1. Si ya se disparó una vez, salimos inmediatamente
-        if (hasTriggeredRef.current) {
-            console.warn("⚠️ [PIPELINE] 4. Abortado: Ya se disparó previamente");
-            return;
-        }
 
         // 2. Marcamos como disparado ANTES de cualquier lógica
         hasTriggeredRef.current = true;
