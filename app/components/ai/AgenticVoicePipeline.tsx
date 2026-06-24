@@ -104,9 +104,6 @@ const AgenticVoicePipeline = ({
 
     // THE BRUTAL RESET CIRCUIT BREAKER
     useEffect(() => {
-        // AÑADE ESTA LÍNEA: Si la IA está hablando o procesando, no apagues nada
-        if (isProcessingRef.current) return;
-
         if (!isTutorActive) {
             stopAudio(true);
             isProcessingRef.current = false;
@@ -330,8 +327,7 @@ const AgenticVoicePipeline = ({
                         // Logic to stop UI during processing
                         if (vadRef.current) vadRef.current.pause();
                         setIsRecordingActive(false);
-                        // CAMBIO AQUÍ: Usa la referencia, no la función directa
-                        await handleVerifySpeechRef.current(audio);
+                        await handleVerifySpeech(audio);
                     },
                 });
             }
