@@ -31,7 +31,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     const [currentLevelContent, setCurrentLevelContent] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [tutorSpeechCount, setTutorSpeechCount] = useState(0);
-    const isUserInteractedRef = useRef(false);
+
 
 
 
@@ -40,6 +40,13 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     const initialSubstep = parseInt(searchParams.get("substep") || "0", 10);
 
     const MAX_SPEECHES = 4;
+
+
+    // Fuera del componente, en ProLevelClient.tsx
+    // Declaramos un flag global que sobrevive a todo
+    if (typeof window !== 'undefined') {
+        (window as any).isUserAuthorizedForAudio = (window as any).isUserAuthorizedForAudio || false;
+    }
 
     const handleStartTutor = () => {
         console.log("🔍 [FLOW 1] Clic detectado en botón de voz.");
@@ -58,7 +65,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
         // Una vez que el contexto se resume/inicia, activamos el estado
         audioContext.resume().then(() => {
             console.log("🔍 [FLOW 2] Audio context activado. Autorización obtenida.");
-            isUserInteractedRef.current = true; // Actualizas el ref, no el state
+            (window as any).isUserAuthorizedForAudio = true; // Guardamos globalmente
             setIsTutorActive(true);
         }).catch(err => {
             console.error("🔍 [ERROR] Fallo al activar contexto de audio:", err);
@@ -300,7 +307,6 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center bg-gray-50 p-2 md:p-4 font-sans overflow-hidden">
             <AgenticVoicePipeline
-                isUserInteractedRef={isUserInteractedRef}
                 tutorSpeechCount={tutorSpeechCount}
                 MAX_SPEECHES={MAX_SPEECHES}
                 setTutorSpeechCount={setTutorSpeechCount}

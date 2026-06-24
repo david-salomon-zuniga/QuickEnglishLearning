@@ -20,8 +20,7 @@ export const useTutor = (
     isRecordingActive: boolean,
     setIsRecordingActive: (active: boolean) => void,
     lessonHistory: string[],
-    setLessonHistory: Dispatch<SetStateAction<string[]>>,
-    isUserInteractedRef: React.MutableRefObject<boolean> // Recibe el objeto
+    setLessonHistory: Dispatch<SetStateAction<string[]>>
 ) => {
 
 
@@ -119,6 +118,9 @@ export const useTutor = (
                 const audio = new Audio(audioUrl);
                 audioRef.current = audio;
 
+                // Acceso global directo
+                const isAuthorized = (window as any).isUserAuthorizedForAudio === true;
+
                 audio.onplay = () => {
                     setIsRecordingActive(false); // Asegura que el VAD no intente arrancar
                 };
@@ -126,9 +128,11 @@ export const useTutor = (
                 // Esperar a que el audio esté listo para sonar
                 audio.oncanplaythrough = async () => {
                     console.log("🔊 [DEBUG] Audio listo.");
+
+
                     try {
                         // Ahora puedes usar el estado para permitir el play
-                        if (isUserInteractedRef.current) {
+                        if (isAuthorized) {
                             audio.play().catch(e => console.warn("Autoplay bloqueado:", e));
                         }
                     } catch (err) {
@@ -175,9 +179,9 @@ export const useTutor = (
                 // 2. SEGURIDAD: Si el audio tarda, forzamos play tras un pequeño delay
                 setTimeout(() => {
                     if (audio.paused) {
-                        console.log("⚠️ [DEBUG] Forzando play por timeout...", isUserInteractedRef.current);
+                        console.log("⚠️ [DEBUG] Forzando play por timeout...", isAuthorized);
                         // Ahora puedes usar el estado para permitir el play
-                        if (isUserInteractedRef.current) {
+                        if (isAuthorized) {
                             audio.play().catch(e => console.warn("Autoplay bloqueado:", e));
                         }
                     }

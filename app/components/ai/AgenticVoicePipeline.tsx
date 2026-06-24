@@ -21,7 +21,6 @@ interface Props {
     isRecordingActive: boolean;
     setIsTutorActive: (active: boolean) => void;
     setIsRecordingActive: (active: boolean) => void;
-    isUserInteractedRef: React.MutableRefObject<boolean>; // Recibe el objeto
     tutorSpeechCount: number;
     MAX_SPEECHES: number;
     setTutorSpeechCount: React.Dispatch<React.SetStateAction<number>>;
@@ -40,7 +39,6 @@ const AgenticVoicePipeline = ({
     isRecordingActive,
     setIsTutorActive,
     setIsRecordingActive,
-    isUserInteracted, // <--- AGREGADO
     tutorSpeechCount,
     MAX_SPEECHES,
     setTutorSpeechCount,
@@ -64,7 +62,7 @@ const AgenticVoicePipeline = ({
         // We can extract these to satisfy the "Cannot find name" errors
         isExitingRef,
         isProcessingRef
-    } = useTutor(numericLevelId/*, onUpdateMetrics*/, isTutorActive, setIsTutorActive, isRecordingActive, setIsRecordingActive, lessonHistory, setLessonHistory, isUserInteracted);
+    } = useTutor(numericLevelId/*, onUpdateMetrics*/, isTutorActive, setIsTutorActive, isRecordingActive, setIsRecordingActive, lessonHistory, setLessonHistory);
 
     const token = useAuthToken(); // Obtiene el token de la cookie de NextAuth
 
