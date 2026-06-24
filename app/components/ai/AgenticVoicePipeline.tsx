@@ -32,7 +32,7 @@ interface Props {
 }
 
 // 1. Move the instance variable outside the component scope
-let globalVadInstance: any = null;
+//let globalVadInstance: any = null;
 
 const AgenticVoicePipeline = ({
     isTutorActive,
@@ -83,7 +83,7 @@ const AgenticVoicePipeline = ({
     const handleVerifySpeechRef = useRef(handleVerifySpeech);
 
     // 1. Añade este useEffect para el watchdog
-    useEffect(() => {
+    /*useEffect(() => {
         let timeoutId: NodeJS.Timeout;
 
         if (isRecordingActive) {
@@ -107,7 +107,7 @@ const AgenticVoicePipeline = ({
     // 2. Actualiza ese ref cada vez que el hook cambie
     useEffect(() => {
         handleVerifySpeechRef.current = handleVerifySpeech;
-    }, [handleVerifySpeech]);
+    }, [handleVerifySpeech]);*/
 
 
     // Agrega esto en AgenticVoicePipeline.tsx
@@ -329,8 +329,57 @@ const AgenticVoicePipeline = ({
     }, [isTutorActive/*, tutorSpeechCount*/]); // Añadido 'token' como dependencia
 
     // EFFECT A: Create the VAD instance once (and only once)
-
+    // EFFECT: Initialize VAD Engine using only local refs
     useEffect(() => {
+        let isMounted = true; // Para evitar actualizaciones en componentes desmontados
+
+        const createVAD = async () => {
+            // Solo inicializar si aún no existe
+            if (!vadRef.current) {
+                console.log("🛠️ Creating VAD Engine...");
+                try {
+                    const vad = await MicVAD.new({
+                        startOnLoad: false,
+                        model: "v5",
+                        baseAssetPath: "/",
+                        onnxWASMBasePath: "/",
+                        onSpeechEnd: async (audio) => {
+                            console.log("🔊 [VAD] Speech ended, processing...");
+                            // 1. Pausa inmediata
+                            if (vadRef.current) await vadRef.current.pause();
+                            // 2. Actualiza UI
+                            setIsRecordingActive(false);
+                            // 3. Procesa
+                            await handleVerifySpeech(audio);
+                        },
+                    });
+
+                    if (isMounted) {
+                        vadRef.current = vad;
+                        isVadReady.current = true;
+                        console.log("✅ VAD Ready (Local instance)");
+                    }
+                } catch (err) {
+                    console.error("❌ Error initializing VAD:", err);
+                }
+            }
+        };
+
+        createVAD();
+
+        // Limpieza al desmontar
+        return () => {
+            isMounted = false;
+            if (vadRef.current) {
+                console.log("🧹 Cleaning up VAD instance...");
+                vadRef.current.pause();
+                // Si el VAD tiene un método destroy(), úsalo aquí.
+                // Si no, al limpiar el ref, el garbage collector se encargará.
+                vadRef.current = null;
+            }
+        };
+    }, [handleVerifySpeech, setIsRecordingActive]); // Dependencias estables
+    /*useEffect(() => {
         const initVAD = async () => {
             // Solo creamos si no existe globalmente
             if (!globalVadInstance) {
@@ -362,7 +411,7 @@ const AgenticVoicePipeline = ({
                 vadRef.current.pause();
             }
         };
-    }, []);
+    }, []);*/
 
     /*    useEffect(() => {
         const createVAD = async () => {
