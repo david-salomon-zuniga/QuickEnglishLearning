@@ -82,6 +82,28 @@ const AgenticVoicePipeline = ({
     // 1. En AgenticVoicePipeline.tsx, crea un ref para la función
     const handleVerifySpeechRef = useRef(handleVerifySpeech);
 
+    // 1. Añade este useEffect para el watchdog
+    useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
+
+        if (isRecordingActive) {
+            console.log("⏱️ [WATCHDOG] Iniciando cuenta regresiva de 10s...");
+            // Forzamos el cierre si después de 10s sigue grabando (evita que se quede infinito)
+            timeoutId = setTimeout(async () => {
+                if (isRecordingActive) {
+                    console.warn("⚠️ [WATCHDOG] Timeout alcanzado. Forzando cierre de mic.");
+                    if (vadRef.current) {
+                        vadRef.current.pause();
+                    }
+                    setIsRecordingActive(false);
+                    // Opcional: disparar una lógica de "sin respuesta"
+                }
+            }, 10000);
+        }
+
+        return () => clearTimeout(timeoutId);
+    }, [isRecordingActive, setIsRecordingActive]);
+
     // 2. Actualiza ese ref cada vez que el hook cambie
     useEffect(() => {
         handleVerifySpeechRef.current = handleVerifySpeech;
