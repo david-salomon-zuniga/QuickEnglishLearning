@@ -205,6 +205,9 @@ export const useTutor = (
                 }, 1000);
             } catch (error) {
                 console.error("❌ [ERROR] Fallo en síntesis:", error);
+                if (error instanceof Error && error.name === 'AbortError') {
+                    console.log("🛑 Síntesis abortada");
+                }
                 resolve();
             }
         });
