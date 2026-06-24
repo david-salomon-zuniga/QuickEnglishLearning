@@ -42,23 +42,25 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     const handleStartTutor = () => {
         console.log("🔍 [FLOW 1] Clic detectado en botón de voz.");
 
-        // El audio debe ser lo primero
-        const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+        // Crea un contexto de audio simple para activar la autorización
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-        silentAudio.play()
-            .then(() => {
-                console.log("🔍 [FLOW 2] Audio silencioso reproducido con éxito. Autorización obtenida.");
-                setIsUserInteracted(true);
-                setIsTutorActive(true);
+        // Crear un buffer de silencio de 0.1 segundos
+        const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
 
-                // Forzar una pequeña pausa antes de activar el pipeline
-                setTimeout(() => {
-                    console.log("🔍 [FLOW 3] Activando pipeline...");
-                }, 100);
-            })
-            .catch(err => {
-                console.error("🔍 [ERROR] Fallo al activar audio:", err);
-            });
+        source.start(0);
+
+        // Una vez que el contexto se resume/inicia, activamos el estado
+        audioContext.resume().then(() => {
+            console.log("🔍 [FLOW 2] Audio context activado. Autorización obtenida.");
+            setIsUserInteracted(true);
+            setIsTutorActive(true);
+        }).catch(err => {
+            console.error("🔍 [ERROR] Fallo al activar contexto de audio:", err);
+        });
     };
 
     useEffect(() => {
