@@ -494,7 +494,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
                                     Conversation Transcript & AI Scoring
                                 </label>
                                 <textarea
-                                    className="w-full p-2 bg-gray-50 border border-gray-200 rounded-2xl text-gray-700 focus:ring-2 focus:ring-blue-500/10 transition-all resize-none font-mono text-[10px] leading-relaxed shadow-inner h-14 md:h-20 overflow-y-auto"
+                                    className="w-full p-2 bg-gray-50 border border-gray-200 rounded-2xl text-gray-700 focus:ring-2 focus:ring-blue-500/10 transition-all resize-none font-mono text-[10px] leading-relaxed shadow-inner h-[168px] md:h-[240px] overflow-y-auto"
                                     value={fullDialogue}
                                     placeholder="You can use this text area as a diary to practice whatever you want..."
                                     onChange={(e) => setFullDialogue(e.target.value)} // Add this
