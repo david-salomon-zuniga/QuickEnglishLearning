@@ -271,7 +271,7 @@ export const useTutor = (
 
             setLessonHistory(prev => [...prev, `Amy: ${currentQuestionRef.current}`, `Analisis: ${cleanAnalysis}`]);
             console.log("result.analysis && isTutorActive:", isTutorActive);
-            if (result.analysis && isTutorActive && (window as any).isUserAuthorizedForAudio == true) {
+            if (result.analysis && isTutorActive) {
                 console.log("🗣️ [DEBUG VERIFY] Preparando voz para análisis:", result.analysis);
                 isExitingRef.current = true;
                 await handleGenerateSpeech(result.analysis, false);
