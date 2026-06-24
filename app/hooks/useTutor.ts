@@ -164,7 +164,8 @@ export const useTutor = (
                         console.log("🎤 Activando micrófono tras reproducción exitosa.");
                         setIsRecordingActive(true);
                     } else {
-                        console.warn("⚠️ Audio bloqueado o interrumpido, NO activando micrófono.", shouldListenAfter, isTutorActive, !isExitingRef.current);
+                        console.log("✅ ⚠️ Audio bloqueado o interrumpido, NO activando micrófono.", shouldListenAfter, isTutorActive, !isExitingRef.current);
+                        console.warn("⚠️ Audio bloqueado o interrumpido, NO activando micrófono.");
                     }
                     resolve();
                 };
