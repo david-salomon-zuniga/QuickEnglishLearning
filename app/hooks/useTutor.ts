@@ -76,7 +76,18 @@ export const useTutor = (
                     body: JSON.stringify({ text })
                 });
 
-                if (!response.ok) throw new Error("TTS Backend Error");
+                // 1. VALIDACIÓN DE ESTADO
+                if (!response.ok) {
+                    console.error("❌ Error de servidor:", response.status);
+                    return; // <--- AQUÍ DETIENES EL ERROR
+                }
+
+                // 2. VALIDACIÓN DE TIPO MIME
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("audio")) {
+                    console.error("❌ El servidor no devolvió audio. Tipo recibido:", contentType);
+                    return; // <--- AQUÍ DETIENES EL ERROR
+                }
 
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
