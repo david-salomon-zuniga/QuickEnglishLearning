@@ -454,6 +454,10 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
                                         onClick={() => {
                                             // 1. Detener audio activo y liberar recursos (indispensable)
                                             stopAudio(true);
+                                            // 2. Detiene la voz de la Web Speech API (speak())
+                                            if (typeof window !== 'undefined' && window.speechSynthesis) {
+                                                window.speechSynthesis.cancel();
+                                            }
                                             // 2. Resetear el flag global
                                             (window as any).isUserAuthorizedForAudio = false;
                                             setIsTutorActive(false);
