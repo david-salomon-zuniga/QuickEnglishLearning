@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/app/utils/supabase";
@@ -31,7 +31,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     const [currentLevelContent, setCurrentLevelContent] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [tutorSpeechCount, setTutorSpeechCount] = useState(0);
-    const [isUserInteracted, setIsUserInteracted] = useState(false);
+    const isUserInteractedRef = useRef(false);
 
 
 
@@ -58,7 +58,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
         // Una vez que el contexto se resume/inicia, activamos el estado
         audioContext.resume().then(() => {
             console.log("🔍 [FLOW 2] Audio context activado. Autorización obtenida.");
-            setIsUserInteracted(true);
+            isUserInteractedRef.current = true; // Actualizas el ref, no el state
             setIsTutorActive(true);
         }).catch(err => {
             console.error("🔍 [ERROR] Fallo al activar contexto de audio:", err);
@@ -300,7 +300,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center bg-gray-50 p-2 md:p-4 font-sans overflow-hidden">
             <AgenticVoicePipeline
-                isUserInteracted={isUserInteracted}
+                isUserInteracted={isUserInteractedRef.current}
                 tutorSpeechCount={tutorSpeechCount}
                 MAX_SPEECHES={MAX_SPEECHES}
                 setTutorSpeechCount={setTutorSpeechCount}
