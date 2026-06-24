@@ -79,7 +79,11 @@ export const useTutor = (
                 // 1. VALIDACIÓN DE ESTADO
                 if (!response.ok) {
                     console.error("❌ Error de servidor:", response.status);
-                    return; // <--- AQUÍ DETIENES EL ERROR
+                    // IMPORTANTE: Liberar los flags de bloqueo para que el usuario pueda reintentar
+                    isProcessingRef.current = false;
+                    isExitingRef.current = false;
+                    setIsRecordingActive(false);
+                    return;
                 }
 
                 // 2. VALIDACIÓN DE TIPO MIME
@@ -90,9 +94,18 @@ export const useTutor = (
                 }
 
                 const audioBlob = await response.blob();
-                console.log("audioBlob: ", audioBlob);
                 const audioUrl = URL.createObjectURL(audioBlob);
-                console.log("audioUrl: ", audioUrl);
+
+                // ESTO ES LO QUE NECESITAS VER
+                console.log("DEBUG: Tipo de archivo recibido:", audioBlob.type);
+                console.log("DEBUG: Tamaño del archivo:", audioBlob.size, "bytes");
+
+                if (audioBlob.size < 100) { // Un audio de 1 segundo debería tener más bytes
+                    console.error("❌ ERROR CRÍTICO: El archivo es demasiado pequeño o vacío");
+                    return;
+                }
+
+
                 // En handleGenerateSpeech, ANTES de crear el nuevo Audio
                 if (audioRef.current) {
                     audioRef.current.pause();
