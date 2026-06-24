@@ -160,7 +160,7 @@ export const useTutor = (
 
                     // 3. SOLO activar si no hubo error de Autoplay (audio.paused debe ser false si sonó)
                     // O si el audio realmente completó su duración
-                    if (shouldListenAfter && isTutorActive && !isExitingRef.current) {
+                    if (shouldListenAfter && isTutorActive) {
                         console.log("🎤 Activando micrófono tras reproducción exitosa.");
                         setIsRecordingActive(true);
                     } else {
@@ -271,7 +271,7 @@ export const useTutor = (
 
             setLessonHistory(prev => [...prev, `Amy: ${currentQuestionRef.current}`, `Analisis: ${cleanAnalysis}`]);
 
-            if (result.analysis) {
+            if (result.analysis && isTutorActive) {
                 console.log("🗣️ [DEBUG VERIFY] Preparando voz para análisis:", result.analysis);
                 isExitingRef.current = true;
                 await handleGenerateSpeech(result.analysis, false);
