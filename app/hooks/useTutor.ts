@@ -46,6 +46,17 @@ export const useTutor = (
     const initializationLockRef = useRef<string | null>(null);
     const hasTriggeredRef = useRef<boolean>(false);
 
+    // Agrega esta función dentro de useTutor
+    const checkAbort = useCallback(() => {
+        if (isAbortedRef.current) {
+            console.log("🛑 [ABORT] Interrupción detectada.");
+            isProcessingRef.current = false;
+            isExitingRef.current = false;
+            return true;
+        }
+        return false;
+    }, []);
+
     const handleGenerateSpeech = (text: string, shouldListenAfter: boolean = true) => {
         return new Promise<void>(async (resolve) => {
 
@@ -252,6 +263,9 @@ export const useTutor = (
             const token = session.access_token;
             const blob = new Blob([new Float32Array(audioBuffer)], { type: 'application/octet-stream' });
 
+            // --- CHECK 1: POST SESSION ---
+            if (checkAbort()) return;
+
             const response = await fetch(`${API_BASE}/api/tutor/verify`, {
                 method: 'POST',
                 body: blob,
@@ -267,7 +281,8 @@ export const useTutor = (
                 console.error("❌ Error del servidor:", errorText);
                 throw new Error(errorText || "Error en la petición");
             }
-
+            // --- CHECK 1: POST SESSION ---
+            if (checkAbort()) return;
             const result: TutorResponse = await response.json();
 
             // Check for abort BEFORE starting the voice generation
@@ -280,6 +295,8 @@ export const useTutor = (
             // NUEVO LOG: Ver qué devolvió Groq exactamente
             console.log("🔍 [DEBUG VERIFY] Resultado recibido:", result);
 
+            // --- CHECK 1: POST SESSION ---
+            if (checkAbort()) return;
 
             // 🛡️ CAPA DE SANITIZACIÓN: Limpiar el análisis crudo de la IA antes de insertarlo en el historial
             let rawAnalysis = result.analysis || "...";
@@ -298,6 +315,8 @@ export const useTutor = (
                 isProcessingRef.current = false;
                 isExitingRef.current = false;
                 // Safety check again before finishing
+                // --- CHECK 1: POST SESSION ---
+                if (checkAbort()) return;
                 if (!isTutorActiveRef.current) return;
             } else {
                 console.warn("⚠️ [DEBUG VERIFY] result.analysis venía vacío o null");
