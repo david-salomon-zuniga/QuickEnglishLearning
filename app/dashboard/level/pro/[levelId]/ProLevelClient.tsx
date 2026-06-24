@@ -64,30 +64,6 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     } = useTutor(numericLevelId/*, onUpdateMetrics*/, isTutorActive, setIsTutorActive, isRecordingActive, setIsRecordingActive, lessonHistory, setLessonHistory);
 
 
-    const hardKillAudio = () => {
-        // 1. Mandatory Stop for standard Audio Objects
-        /*if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.src = ""; // Force clean the source
-            audioRef.current.load();   // Force the browser to drop the buffer
-            audioRef.current = null;
-        }*/
-
-        // 2. Mandatory Stop for Web Speech API (if used)
-        if (typeof window !== 'undefined' && window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-        }
-
-        // 3. Mandatory authorization revocation
-        (window as any).isUserAuthorizedForAudio = false;
-
-        // 4. Force state cleanup
-        isProcessingRef.current = false;
-        isExitingRef.current = false;
-
-        console.log("🛑 [HARD KILL] Audio stream obliterated.");
-    };
-
     const handleStartTutor = () => {
         console.log("🔍 [FLOW 1] Clic detectado en botón de voz.");
 
@@ -477,7 +453,6 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
                                     <button
                                         onClick={() => {
                                             // 1. Detener audio activo y liberar recursos (indispensable)
-                                            hardKillAudio();
                                             stopAudio(true);
                                             // 2. Detiene la voz de la Web Speech API (speak())
                                             if (typeof window !== 'undefined' && window.speechSynthesis) {
