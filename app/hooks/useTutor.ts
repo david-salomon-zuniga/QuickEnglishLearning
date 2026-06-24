@@ -23,7 +23,14 @@ export const useTutor = (
     setLessonHistory: Dispatch<SetStateAction<string[]>>
 ) => {
 
+    // Inside useTutor.ts
+    const isAbortedRef = useRef(false);
+    const isTutorActiveRef = useRef(isTutorActive);
 
+    // Keep the ref in sync with the state
+    useEffect(() => {
+        isTutorActiveRef.current = isTutorActive;
+    }, [isTutorActive]);
 
     // Sync the local state with the external prop
     useEffect(() => {
@@ -196,6 +203,7 @@ export const useTutor = (
 
     const stopAudio = useCallback((force: boolean = false) => {
         if (force) {
+            isAbortedRef.current = true; // Set the kill signal
             isExitingRef.current = false;
             isProcessingRef.current = false;
         }
@@ -211,6 +219,8 @@ export const useTutor = (
         }
 
         setIsRecordingActive(false);
+        // Reset the flag after a short delay to allow future interactions
+        setTimeout(() => { isAbortedRef.current = false; }, 500);
     }, [setIsRecordingActive]);
 
     const handleVerifySpeech = useCallback(async (audioBuffer: Float32Array) => {
@@ -260,6 +270,13 @@ export const useTutor = (
 
             const result: TutorResponse = await response.json();
 
+            // Check for abort BEFORE starting the voice generation
+            if (isAbortedRef.current) {
+                console.log("🛑 [ABORTED] Reset detected. Halting pipeline.");
+                isProcessingRef.current = false;
+                return;
+            }
+
             // NUEVO LOG: Ver qué devolvió Groq exactamente
             console.log("🔍 [DEBUG VERIFY] Resultado recibido:", result);
 
@@ -270,8 +287,9 @@ export const useTutor = (
             const cleanAnalysis = isClient ? DOMPurify.sanitize(rawAnalysis) : rawAnalysis;
 
             setLessonHistory(prev => [...prev, `Amy: ${currentQuestionRef.current}`, `Analisis: ${cleanAnalysis}`]);
-            console.log("result.analysis && isTutorActive:", isTutorActive);
-            if (result.analysis && isTutorActive) {
+            console.log("isTutorActiveRef.current:", isTutorActiveRef.current);
+            if (result.analysis && isTutorActiveRef.current) {
+                console.log("isTutorActiveRef.current:", isTutorActiveRef.current);
                 console.log("🗣️ [DEBUG VERIFY] Preparando voz para análisis:", result.analysis);
                 isExitingRef.current = true;
                 await handleGenerateSpeech(result.analysis, false);
@@ -279,6 +297,8 @@ export const useTutor = (
                 // Solo después de que el audio termine, liberamos el bloqueo
                 isProcessingRef.current = false;
                 isExitingRef.current = false;
+                // Safety check again before finishing
+                if (!isTutorActiveRef.current) return;
             } else {
                 console.warn("⚠️ [DEBUG VERIFY] result.analysis venía vacío o null");
                 // Solo si no hay audio, liberamos de forma normal
