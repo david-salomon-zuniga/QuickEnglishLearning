@@ -15,6 +15,13 @@ import { ListeningComprehensionPractice } from "@/app/components/practice/Listen
 import { VideoPractice } from "@/app/components/practice/VideoPractice";
 import { TextPractice } from "@/app/components/practice/TextPractice";
 
+// Fuera del componente, en ProLevelClient.tsx
+// Declaramos un flag global que sobrevive a todo
+if (typeof window !== 'undefined') {
+    (window as any).isUserAuthorizedForAudio = (window as any).isUserAuthorizedForAudio || false;
+}
+
+
 export default function ProLevelClient({ session, levelId }: { session: any, levelId: string }) {
     const numericLevelId = Number(levelId);
     const userId = session.user.id;
@@ -42,11 +49,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     const MAX_SPEECHES = 4;
 
 
-    // Fuera del componente, en ProLevelClient.tsx
-    // Declaramos un flag global que sobrevive a todo
-    if (typeof window !== 'undefined') {
-        (window as any).isUserAuthorizedForAudio = (window as any).isUserAuthorizedForAudio || false;
-    }
+
 
     const handleStartTutor = () => {
         console.log("🔍 [FLOW 1] Clic detectado en botón de voz.");
