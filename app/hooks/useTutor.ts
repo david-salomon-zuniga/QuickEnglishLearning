@@ -23,8 +23,7 @@ export const useTutor = (
     setLessonHistory: Dispatch<SetStateAction<string[]>>
 ) => {
 
-    // Acceso global directo
-    const isAuthorized = (window as any).isUserAuthorizedForAudio === true;
+
 
     // Sync the local state with the external prop
     useEffect(() => {
@@ -119,7 +118,8 @@ export const useTutor = (
                 const audio = new Audio(audioUrl);
                 audioRef.current = audio;
 
-
+                // Acceso global directo
+                const isAuthorized = (window as any).isUserAuthorizedForAudio === true;
 
                 audio.onplay = () => {
                     setIsRecordingActive(false); // Asegura que el VAD no intente arrancar
@@ -271,7 +271,7 @@ export const useTutor = (
 
             setLessonHistory(prev => [...prev, `Amy: ${currentQuestionRef.current}`, `Analisis: ${cleanAnalysis}`]);
             console.log("result.analysis && isTutorActive:", isTutorActive);
-            if (result.analysis && isTutorActive && isAuthorized) {
+            if (result.analysis && isTutorActive) {
                 console.log("🗣️ [DEBUG VERIFY] Preparando voz para análisis:", result.analysis);
                 isExitingRef.current = true;
                 await handleGenerateSpeech(result.analysis, false);
