@@ -132,7 +132,7 @@ export const useTutor = (
 
                     try {
                         // Ahora puedes usar el estado para permitir el play
-                        if (isAuthorized) {
+                        if (isAuthorized && !isTutorActive) {
                             audio.play().catch(e => console.warn("Autoplay bloqueado:", e));
                         }
                     } catch (err) {
@@ -181,7 +181,7 @@ export const useTutor = (
                     if (audio.paused) {
                         console.log("⚠️ [DEBUG] Forzando play por timeout...", isAuthorized);
                         // Ahora puedes usar el estado para permitir el play
-                        if (isAuthorized) {
+                        if (isAuthorized && isTutorActive) {
                             audio.play().catch(e => console.warn("Autoplay bloqueado:", e));
                         }
                     }
