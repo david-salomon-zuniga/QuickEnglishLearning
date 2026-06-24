@@ -21,7 +21,7 @@ interface Props {
     isRecordingActive: boolean;
     setIsTutorActive: (active: boolean) => void;
     setIsRecordingActive: (active: boolean) => void;
-    isUserInteracted: boolean; // <--- AGREGADO
+    isUserInteractedRef: React.MutableRefObject<boolean>; // Recibe el objeto
     tutorSpeechCount: number;
     MAX_SPEECHES: number;
     setTutorSpeechCount: React.Dispatch<React.SetStateAction<number>>;

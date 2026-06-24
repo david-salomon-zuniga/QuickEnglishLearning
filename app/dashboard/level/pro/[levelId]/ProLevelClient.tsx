@@ -300,7 +300,7 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center bg-gray-50 p-2 md:p-4 font-sans overflow-hidden">
             <AgenticVoicePipeline
-                isUserInteracted={isUserInteractedRef.current}
+                isUserInteractedRef={isUserInteractedRef}
                 tutorSpeechCount={tutorSpeechCount}
                 MAX_SPEECHES={MAX_SPEECHES}
                 setTutorSpeechCount={setTutorSpeechCount}

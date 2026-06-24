@@ -21,7 +21,7 @@ export const useTutor = (
     setIsRecordingActive: (active: boolean) => void,
     lessonHistory: string[],
     setLessonHistory: Dispatch<SetStateAction<string[]>>,
-    isUserInteracted: boolean // <--- Recibido aquí
+    isUserInteractedRef: React.MutableRefObject<boolean> // Recibe el objeto
 ) => {
 
 
@@ -128,7 +128,7 @@ export const useTutor = (
                     console.log("🔊 [DEBUG] Audio listo.");
                     try {
                         // Ahora puedes usar el estado para permitir el play
-                        if (isUserInteracted) {
+                        if (isUserInteractedRef.current) {
                             audio.play().catch(e => console.warn("Autoplay bloqueado:", e));
                         }
                     } catch (err) {
@@ -175,9 +175,9 @@ export const useTutor = (
                 // 2. SEGURIDAD: Si el audio tarda, forzamos play tras un pequeño delay
                 setTimeout(() => {
                     if (audio.paused) {
-                        console.log("⚠️ [DEBUG] Forzando play por timeout...", isUserInteracted);
+                        console.log("⚠️ [DEBUG] Forzando play por timeout...", isUserInteractedRef.current);
                         // Ahora puedes usar el estado para permitir el play
-                        if (isUserInteracted) {
+                        if (isUserInteractedRef.current) {
                             audio.play().catch(e => console.warn("Autoplay bloqueado:", e));
                         }
                     }
