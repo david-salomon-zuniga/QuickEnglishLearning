@@ -271,9 +271,14 @@ export const useTutor = (
                 isExitingRef.current = true;
                 await handleGenerateSpeech(result.analysis, false);
                 await new Promise(res => setTimeout(res, 500));
-
+                // Solo después de que el audio termine, liberamos el bloqueo
+                isProcessingRef.current = false;
+                isExitingRef.current = false;
             } else {
                 console.warn("⚠️ [DEBUG VERIFY] result.analysis venía vacío o null");
+                // Solo si no hay audio, liberamos de forma normal
+                isProcessingRef.current = false;
+                isExitingRef.current = false;
             }
 
             initializationLockRef.current = null;
@@ -283,17 +288,12 @@ export const useTutor = (
         } catch (error) {
             // Silenced console.log, only keeping functional error tracking
         } finally {
+            // Esto garantiza que el bloqueo se libere aunque haya errores,
+            // pero NO pausa el VAD agresivamente aquí.
             isProcessingRef.current = false;
             isExitingRef.current = false;
-
-            // Solo pausar si NO es la última intervención de la IA
-            // Si la IA está hablando, NO debemos forzar el pause
-            if (vadRef.current && !isExitingRef.current) {
-                console.log("🔇 Pausando VAD tras verificación...");
-                vadRef.current.pause();
-            }
         }
-    }, [numericLevelId]); // Solo cambia si el nivel cambia
+    }, [numericLevelId, setIsRecordingActive, setIsTutorActive]);
 
     return {
         isTutorActive,
