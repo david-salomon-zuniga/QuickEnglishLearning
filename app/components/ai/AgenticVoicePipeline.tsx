@@ -294,6 +294,8 @@ const AgenticVoicePipeline = ({
 
     // 1. UPDATED INITIALIZATION EFFECT
     useEffect(() => {
+
+        console.log("Updated Initializatinon Effect", isTutorActive, isVadReady.current, hasTriggeredRef.current);
         // 1. Guardias: Token, motor listo
         if (!tokenRef.current || !isVadReady.current) return;
 
