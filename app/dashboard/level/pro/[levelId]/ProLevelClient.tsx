@@ -33,6 +33,8 @@ export default function ProLevelClient({ session, levelId }: { session: any, lev
     const [tutorSpeechCount, setTutorSpeechCount] = useState(0);
     const [isUserInteracted, setIsUserInteracted] = useState(false);
 
+
+
     const isVocabLevel = numericLevelId >= 4;
     const initialStep = parseInt(searchParams.get("step") || "0", 10);
     const initialSubstep = parseInt(searchParams.get("substep") || "0", 10);

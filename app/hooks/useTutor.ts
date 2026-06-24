@@ -38,6 +38,7 @@ export const useTutor = (
     const isProcessingRef = useRef(false);
     const isExitingRef = useRef(false);
     const initializationLockRef = useRef<string | null>(null);
+    const hasTriggeredRef = useRef<boolean>(false);
 
     const handleGenerateSpeech = (text: string, shouldListenAfter: boolean = true) => {
         return new Promise<void>(async (resolve) => {
@@ -101,7 +102,10 @@ export const useTutor = (
                 console.log("DEBUG: Tamaño del archivo:", audioBlob.size, "bytes");
 
                 if (audioBlob.size < 100) { // Un audio de 1 segundo debería tener más bytes
-                    console.error("❌ ERROR CRÍTICO: El archivo es demasiado pequeño o vacío");
+                    console.error("❌ ERROR CRÍTICO: El servidor devolvió un archivo vacío.");
+                    isProcessingRef.current = false; // Importante: liberar el bloqueo
+                    hasTriggeredRef.current = false; // Permitir que se dispare de nuevo
+                    setIsRecordingActive(false);
                     return;
                 }
 
@@ -152,7 +156,7 @@ export const useTutor = (
 
                     // 3. SOLO activar si no hubo error de Autoplay (audio.paused debe ser false si sonó)
                     // O si el audio realmente completó su duración
-                    if (shouldListenAfter && isTutorActive && !isExitingRef.current && !audio.paused) {
+                    if (shouldListenAfter && isTutorActive && !isExitingRef.current) {
                         console.log("🎤 Activando micrófono tras reproducción exitosa.");
                         setIsRecordingActive(true);
                     } else {
