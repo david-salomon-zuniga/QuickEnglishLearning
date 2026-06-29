@@ -58,7 +58,33 @@ export default async function DashboardPage() {
 
     const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || "User";
 
-
+    // Add this near the top of your DashboardPage or a new Pricing component
+    const PLANS = [
+        {
+            name: "Monthly",
+            price: "$10.00",
+            period: "month",
+            id: process.env.NEXT_PUBLIC_LS_MONTHLY_VARIANT_ID
+        },
+        {
+            name: "Quarterly",
+            price: "$25.00",
+            period: "3 months",
+            id: process.env.NEXT_PUBLIC_LS_QUARTERLY_VARIANT_ID
+        },
+        {
+            name: "6-Month",
+            price: "$45.00",
+            period: "6 months",
+            id: process.env.NEXT_PUBLIC_LS_SIX_MONTHS_VARIANT_ID
+        },
+        {
+            name: "Annual",
+            price: "$80.00",
+            period: "year",
+            id: process.env.NEXT_PUBLIC_LS_YEARLY_VARIANT_ID
+        }
+    ];
     const LEMON_SQUEEZY_ENDPOINT = "https://salomonapps.lemonsqueezy.com/checkout/buy/7201c356-e4cf-46e8-9226-72db59fd19b5";
     const checkoutUrlWithId = `${LEMON_SQUEEZY_ENDPOINT}?checkout[custom][user_id]=${session?.user?.id}&embed=1`;
 
@@ -96,7 +122,7 @@ export default async function DashboardPage() {
                     <div className="font-medium text-gray-700">Dashboard</div>
                     <div className="flex items-center gap-2 md:gap-4">
                         <ProButton
-                            checkoutUrl={checkoutUrlWithId}
+                            //checkoutUrl={checkoutUrlWithId}
                             isPro={isProUser}
                             userId={session.user.id} // <-- Cambia user.id por session.user.id
                         />

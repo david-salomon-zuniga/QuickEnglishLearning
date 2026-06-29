@@ -1,12 +1,16 @@
 "use client"
 
+import { useState } from "react";
+
 interface ProButtonProps {
-    checkoutUrl: string;
+    //checkoutUrl: string; // We don't use this hardcoded string anymore!
     isPro: boolean;
-    userId: string; // Necesitamos el ID para pasarlo al Webhook
+    userId: string;
 }
 
-export default function ProButton({ checkoutUrl, isPro, userId }: ProButtonProps) {
+export default function ProButton({ isPro, userId }: ProButtonProps) {
+    const [isOpen, setIsOpen] = useState(false);
+
     if (isPro) {
         return (
             <div className="px-2 py-1 md:px-4 md:py-1.5 bg-gray-200 text-gray-500 text-xs md:text-sm font-bold rounded-full cursor-default border border-gray-300">
@@ -15,26 +19,75 @@ export default function ProButton({ checkoutUrl, isPro, userId }: ProButtonProps
         )
     }
 
-    const handleOpenCheckout = (e: React.MouseEvent) => {
-        e.preventDefault(); // Evita que el navegador navegue al link directamente
+    // 1. Map your 4 Vercel Variant IDs to their display data
+    const plans = [
+        { name: "Monthly Plan", price: "$10.00", desc: "Billed monthly", id: process.env.NEXT_PUBLIC_LS_MONTHLY_VARIANT_ID },
+        { name: "Quarterly Plan", price: "$25.00", desc: "Billed every 3 months", id: process.env.NEXT_PUBLIC_LS_QUARTERLY_VARIANT_ID },
+        { name: "6-Month Plan", price: "$45.00", desc: "Billed every 6 months", id: process.env.NEXT_PUBLIC_LS_SIX_MONTHS_VARIANT_ID },
+        { name: "Annual Plan", price: "$80.00", desc: "Billed yearly", id: process.env.NEXT_PUBLIC_LS_YEARLY_VARIANT_ID },
+    ];
+
+    const handleOpenCheckout = (variantId: string) => {
+        if (!variantId) {
+            alert("Variant ID missing. Check your Vercel Environment Variables!");
+            return;
+        }
+
+        // 2. Build the dynamic URL using the specific clicked Variant ID
+        const finalUrl = `https://salomonapps.lemonsqueezy.com/checkout/buy/${variantId}?checkout[custom][user_id]=${userId}&embed=1`;
 
         // @ts-ignore
         if (window.LemonSqueezy) {
             // @ts-ignore
-            window.LemonSqueezy.Url.Open(checkoutUrl, {
-                custom: {
-                    user_id: userId // ¡Aquí está la magia para tu Webhook!
-                }
-            });
+            window.LemonSqueezy.Url.Open(finalUrl);
+            setIsOpen(false); // Close modal when checkout opens
         }
     };
 
     return (
-        <button
-            onClick={handleOpenCheckout}
-            className="px-2 py-1 md:px-4 md:py-1.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs md:text-sm font-bold rounded-full hover:shadow-md transition shadow-sm cursor-pointer"
-        >
-            PRO
-        </button>
+        <>
+            {/* The main navbar button */}
+            <button
+                onClick={() => setIsOpen(true)}
+                className="px-2 py-1 md:px-4 md:py-1.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs md:text-sm font-bold rounded-full hover:shadow-md transition shadow-sm cursor-pointer"
+            >
+                PRO
+            </button>
+
+            {/* The 4-Option Modal Popup */}
+            {isOpen && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-gray-100">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-gray-800">Choose your Premium Plan</h2>
+                            <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {plans.map((plan) => (
+                                <div
+                                    key={plan.name}
+                                    className="border border-gray-200 p-4 rounded-2xl flex items-center justify-between hover:border-orange-400 transition"
+                                >
+                                    <div>
+                                        <h4 className="font-bold text-gray-800">{plan.name}</h4>
+                                        <p className="text-xs text-gray-500">{plan.desc}</p>
+                                    </div>
+                                    <div className="text-right flex flex-col items-end gap-2">
+                                        <span className="font-extrabold text-lg text-gray-900">{plan.price}</span>
+                                        <button
+                                            onClick={() => handleOpenCheckout(plan.id || "")}
+                                            className="px-3 py-1 bg-gray-900 text-white text-xs font-bold rounded-lg hover:bg-orange-500 transition cursor-pointer"
+                                        >
+                                            Select
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     )
 }
