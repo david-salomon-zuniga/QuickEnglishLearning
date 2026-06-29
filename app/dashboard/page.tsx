@@ -85,8 +85,8 @@ export default async function DashboardPage() {
             id: process.env.NEXT_PUBLIC_LS_YEARLY_VARIANT_ID
         }
     ];
-    const LEMON_SQUEEZY_ENDPOINT = "https://salomonapps.lemonsqueezy.com/checkout/buy/7201c356-e4cf-46e8-9226-72db59fd19b5";
-    const checkoutUrlWithId = `${LEMON_SQUEEZY_ENDPOINT}?checkout[custom][user_id]=${session?.user?.id}&embed=1`;
+    //const LEMON_SQUEEZY_ENDPOINT = "https://salomonapps.lemonsqueezy.com/checkout/buy/7201c356-e4cf-46e8-9226-72db59fd19b5";
+    //const checkoutUrlWithId = `${LEMON_SQUEEZY_ENDPOINT}?checkout[custom][user_id]=${session?.user?.id}&embed=1`;
 
     // Asegúrate de extraer el token. 
     // NOTA: Dependiendo de tu configuración de auth, el token podría estar en session.accessToken
