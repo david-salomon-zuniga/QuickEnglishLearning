@@ -28,6 +28,10 @@ export default function ProButton({ isPro, userId }: ProButtonProps) {
     ];
 
     const handleOpenCheckout = (variantId: string) => {
+        // 🔍 Print exactly what ID is being caught
+        console.log("🚀 Clicked Variant ID:", variantId);
+
+
         if (!variantId) {
             alert("Variant ID missing. Check your Vercel Environment Variables!");
             return;
@@ -35,7 +39,7 @@ export default function ProButton({ isPro, userId }: ProButtonProps) {
 
         // 2. Build the dynamic URL using the specific clicked Variant ID
         const finalUrl = `https://salomonapps.lemonsqueezy.com/checkout/buy/${variantId}?checkout[custom][user_id]=${userId}&embed=1`;
-
+        console.log("🔗 Opening URL:", finalUrl);
         // @ts-ignore
         if (window.LemonSqueezy) {
             // @ts-ignore
