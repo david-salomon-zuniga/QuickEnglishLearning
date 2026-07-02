@@ -44,7 +44,7 @@ export default function ProButton({ isPro, userId }: ProButtonProps) {
         if (window.LemonSqueezy) {
             // @ts-ignore
             window.LemonSqueezy.Url.Open(finalUrl);
-            setIsOpen(false); // Close modal when checkout opens
+            // REMOVED setIsOpen(false) -> Keep it open in the background so listeners survive!
         }
     };
 
