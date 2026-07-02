@@ -21,8 +21,10 @@ export default function LemonSqueezyScript({ userId }: { userId: string }) {
                     window.LemonSqueezy.Setup({
                         eventHandler: (event: any) => {
                             if (event.event === 'Checkout.Closed') {
-                                // Force a full browser reload to wipe the cache and fetch fresh DB status
-                                window.location.reload();
+                                // Give the webhook 2 seconds to update your Hugging Face database first
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);
                             }
                         }
                     });
