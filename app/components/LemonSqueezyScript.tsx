@@ -26,9 +26,7 @@ export default function LemonSqueezyScript({ userId }: { userId: string }) {
                         console.log("Lemon Squeezy Global Event:", event.event);
                         if (event.event === 'Checkout.Closed') {
                             console.log("Checkout closed detected! Reloading in 1.5s...");
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1500);
+
                         }
                     }
                 });
