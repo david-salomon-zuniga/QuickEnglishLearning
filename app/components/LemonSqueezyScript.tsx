@@ -1,11 +1,8 @@
 "use client"
 
 import Script from "next/script"
-import { useRouter } from "next/navigation"
 
 export default function LemonSqueezyScript({ userId }: { userId: string }) {
-    const router = useRouter()
-
     return (
         <Script
             src="https://app.lemonsqueezy.com/js/lemon.js"
@@ -15,20 +12,26 @@ export default function LemonSqueezyScript({ userId }: { userId: string }) {
                 if (window.createLemonSqueezy) {
                     // @ts-ignore
                     window.createLemonSqueezy();
-
-                    // Escuchar cuando el checkout se cierra
-                    // @ts-ignore
-                    window.LemonSqueezy.Setup({
-                        eventHandler: (event: any) => {
-                            if (event.event === 'Checkout.Closed') {
-                                // Give the webhook 2 seconds to update your Hugging Face database first
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 2000);
-                            }
-                        }
-                    });
                 }
+
+                // Bind directly to the global window object so it never unmounts
+                // @ts-ignore
+                window.LemonSqueezy = window.LemonSqueezy || {};
+                // @ts-ignore
+                window.LemonSqueezy.Setup = window.LemonSqueezy.Setup || function () { };
+
+                // @ts-ignore
+                window.LemonSqueezy.Setup({
+                    eventHandler: (event: any) => {
+                        console.log("Lemon Squeezy Global Event:", event.event);
+                        if (event.event === 'Checkout.Closed') {
+                            console.log("Checkout closed detected! Reloading in 1.5s...");
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        }
+                    }
+                });
             }}
         />
     )
