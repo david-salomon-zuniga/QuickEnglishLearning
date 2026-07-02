@@ -21,9 +21,8 @@ export default function LemonSqueezyScript({ userId }: { userId: string }) {
                     window.LemonSqueezy.Setup({
                         eventHandler: (event: any) => {
                             if (event.event === 'Checkout.Closed') {
-                                // Forzamos un refresco completo para que 
-                                // Server Components vuelvan a pedir datos a la DB
-                                router.refresh();
+                                // Force a full browser reload to wipe the cache and fetch fresh DB status
+                                window.location.reload();
                             }
                         }
                     });
