@@ -6,6 +6,7 @@ import Link from "next/link";
 import SignOutButton from "../components/SignOutButton"
 import ProButton from "../components/ProButton";
 import LemonSqueezyScript from "../components/LemonSqueezyScript";
+import ProStatusPoller from "../components/ProStatusPoller"; // 👈 ADDED THIS LINE
 import { API_BASE } from '@/lib/api';
 import ProfileButton from "../components/ProfileButton";
 
@@ -114,6 +115,8 @@ export default async function DashboardPage() {
 
     return (
         <div className="relative min-h-screen bg-gray-50 overflow-x-hidden">
+            {/* 👈 ADDED THIS COMPONENT WORKER HERE */}
+            <ProStatusPoller isPro={isProUser} />
             {/*<LanguageModal />*/}
             <Sidebar />
 

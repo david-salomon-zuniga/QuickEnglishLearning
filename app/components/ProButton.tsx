@@ -44,25 +44,7 @@ export default function ProButton({ isPro, userId }: ProButtonProps) {
         if (window.LemonSqueezy) {
             // @ts-ignore
             window.LemonSqueezy.Url.Open(finalUrl);
-
-            // 1. Instantly hide your pricing plan modal for the clean UI!
-            setIsOpen(false);
-
-            // 2. Track when they return to the app from the payment flow
-            const handleWindowFocus = () => {
-                console.log("👋 User returned to Dashboard! Reloading to fetch fresh Pro status...");
-
-                // Give the Go webhook 1.5 seconds to commit to the database first
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-
-                // Clean up the window listener immediately so it doesn't loop fire
-                window.removeEventListener("focus", handleWindowFocus);
-            };
-
-            // Attach the focus listener
-            window.addEventListener("focus", handleWindowFocus);
+            setIsOpen(false); // Clean UI instantly!
         }
     };
 
